@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WRR Talent Intelligence Query Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f5f4f1;
+    --bg2:       #eeecea;
+    --surface:   #ffffff;
+    --surface2:  #f9f8f6;
+    --border:    #e2dfd9;
+    --border-md: #d0ccc5;
+    --ink:       #1a1916;
+    --ink-2:     #4a4743;
+    --ink-3:     #8c8882;
+    --ink-4:     #b5b2ac;
+    --amber:     #c97c2a;
+    --amber-lt:  #fdf3e7;
+    --amber-md:  #f0c484;
+    --teal:      #2a7c72;
+    --teal-lt:   #eaf4f2;
+    --red:       #c0392b;
+    --red-lt:    #fdf0ee;
+    --green:     #2d7a4f;
+    --green-lt:  #edf7f1;
+    --blue:      #2a5fc9;
+    --blue-lt:   #eef3fd;
+    --r:         6px;
+    --r-lg:      10px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow:    0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Figtree', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ─── Header ─── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 36px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-mark {
+    width: 30px; height: 30px;
+    background: var(--ink);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Instrument Serif', serif;
+    font-size: 13px;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .logo-name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 16px;
+    color: var(--ink);
+    letter-spacing: 0.1px;
+  }
+  .logo-sep {
+    width: 1px; height: 16px;
+    background: var(--border-md);
+    margin: 0 2px;
+  }
+  .logo-product {
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-3);
+    letter-spacing: 0.2px;
+  }
+  .header-meta {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .db-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--teal);
+    background: var(--teal-lt);
+    border: 1px solid rgba(42,124,114,0.2);
+    border-radius: 20px;
+    padding: 3px 10px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ─── Layout ─── */
+  .layout {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 16px 36px 80px;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ─── Panel ─── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: visible;
+  }
+  .panel-head {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .pt-icon {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .pt-amber { background: var(--amber-lt); color: var(--amber); }
+  .pt-teal  { background: var(--teal-lt);  color: var(--teal);  }
+  .pt-ink   { background: var(--bg2);      color: var(--ink-2); }
+
+  .panel-body { padding: 18px 20px; }
+  .panel-body + .panel-body { border-top: 1px solid var(--border); }
+
+  /* ─── Section label ─── */
+  .sect-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+
+  /* ─── Filter Groups ─── */
+  .filter-groups { display: flex; flex-direction: column; gap: 12px; }
+
+  .filter-group {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .filter-group:has(.group-required:checked) {
+    border-color: var(--amber-md);
+    box-shadow: 0 0 0 2px rgba(201,124,42,0.1);
+  }
+
+  .group-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .group-name-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    min-width: 0;
+  }
+  .group-name-input::placeholder { color: var(--ink-4); font-weight: 400; }
+
+  /* Required toggle */
+  .req-wrap {
+    display: flex; align-items: center; gap: 5px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 8px 4px 6px;
+    border-radius: 20px;
+    border: 1px solid var(--border-md);
+    background: var(--bg2);
+    transition: all 0.12s;
+  }
+  .req-wrap:has(input:checked) {
+    background: var(--amber-lt);
+    border-color: var(--amber-md);
+  }
+  .group-required { display: none; }
+  .req-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--ink-3);
+    transition: color 0.12s;
+  }
+  .req-wrap:has(input:checked) .req-label { color: var(--amber); }
+  .req-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--ink-4);
+    transition: background 0.12s;
+    flex-shrink: 0;
+  }
+  .req-wrap:has(input:checked) .req-dot { background: var(--amber); }
+
+  /* Logic toggle */
+  .logic-wrap {
+    display: flex;
+    border: 1px solid var(--border-md);
+    border-radius: 5px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .logic-opt {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 4px 9px;
+    cursor: pointer;
+    background: var(--bg2);
+    color: var(--ink-3);
+    transition: all 0.1s;
+    border: none;
+    letter-spacing: 0.3px;
+  }
+  .logic-opt + .logic-opt { border-left: 1px solid var(--border-md); }
+  .logic-opt.active-or  { background: var(--blue-lt);  color: var(--blue);  font-weight: 500; }
+  .logic-opt.active-and { background: var(--teal-lt);  color: var(--teal);  font-weight: 500; }
+
+  .btn-del-group {
+    width: 22px; height: 22px;
+    border: 1px solid var(--border-md);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ink-4);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; line-height: 1;
+    transition: all 0.1s;
+    flex-shrink: 0;
+  }
+  .btn-del-group:hover { border-color: var(--red); color: var(--red); background: var(--red-lt); }
+
+  /* Fields checkboxes */
+  .group-fields {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-wrap: wrap;
+  }
+  .field-check {
+    display: flex; align-items: center; gap: 5px;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 9px;
+    border-radius: 20px;
+    border: 1px solid var(--border-md);
+    background: var(--bg2);
+    transition: all 0.1s;
+  }
+  .field-check input { display: none; }
+  .field-check-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    transition: color 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .field-check.checked-title   { background: var(--blue-lt);          border-color: rgba(42,95,201,0.3);    }
+  .field-check.checked-title   .field-check-label { color: var(--blue);  }
+  .field-check.checked-desc    { background: var(--teal-lt);          border-color: rgba(42,124,114,0.3);  }
+  .field-check.checked-desc    .field-check-label { color: var(--teal);  }
+  .field-check.checked-company { background: #f3f0fd;                 border-color: rgba(109,69,194,0.3);  }
+  .field-check.checked-company .field-check-label { color: #6d45c2;    }
+
+  /* Keywords textarea */
+  .group-kw-area {
+    padding: 10px 14px 12px;
+  }
+  .kw-textarea {
+    width: 100%;
+    min-height: 76px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 9px 11px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink);
+    line-height: 1.8;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  .kw-textarea::placeholder { color: var(--ink-4); font-style: italic; }
+  .kw-textarea:focus { border-color: var(--border-md); box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+  .kw-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    margin-top: 5px;
+    letter-spacing: 0.2px;
+  }
+
+  /* Add group button */
+  .btn-add-group {
+    width: 100%;
+    border: 1.5px dashed var(--border-md);
+    border-radius: var(--r-lg);
+    background: transparent;
+    color: var(--ink-3);
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin-top: 4px;
+  }
+  .btn-add-group:hover {
+    border-color: var(--ink-3);
+    color: var(--ink);
+    background: var(--surface2);
+  }
+
+  /* ─── Advanced Filters ─── */
+  .adv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .adv-group label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 5px;
+  }
+  .adv-select, .adv-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 8px 10px;
+    font-family: 'Figtree', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.12s;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  .adv-select:focus, .adv-input:focus {
+    border-color: var(--border-md);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+  }
+  .adv-input::placeholder { color: var(--ink-4); }
+
+  /* ─── Run / Clear buttons ─── */
+  .btn-run {
+    width: 100%;
+    background: var(--ink);
+    border: none;
+    border-radius: var(--r);
+    color: #fff;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    padding: 11px;
+    cursor: pointer;
+    transition: all 0.14s;
+    margin-top: 16px;
+  }
+  .btn-run:hover { background: #2e2c29; box-shadow: var(--shadow); }
+  .btn-run:active { transform: scale(0.995); }
+
+  .btn-clear {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border-md);
+    border-radius: var(--r);
+    color: var(--ink-3);
+    font-family: 'Figtree', sans-serif;
+    font-size: 12px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    margin-top: 6px;
+  }
+  .btn-clear:hover { border-color: var(--red); color: var(--red); background: var(--red-lt); }
+
+  /* ─── Right panel ─── */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ─── Stats ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 16px 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-box-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .stat-box-val {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-box-sub {
+    font-size: 11px;
+    color: var(--ink-4);
+    margin-top: 3px;
+  }
+
+  /* ─── Results panel ─── */
+  .results-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .results-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .results-title-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .results-h {
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600; font-size: 13px;
+    color: var(--ink);
+  }
+  .results-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 9px;
+    color: var(--ink-3);
+  }
+  .results-actions { display: flex; gap: 8px; align-items: center; }
+
+  .btn-export {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--teal-lt);
+    border: 1px solid rgba(42,124,114,0.25);
+    border-radius: var(--r);
+    color: var(--teal);
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 6px 13px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-export:hover { background: rgba(42,124,114,0.15); }
+
+  .sort-sel {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: var(--surface2);
+    color: var(--ink-2);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 6px 8px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* ─── Table ─── */
+  .table-scroll { overflow-x: auto; }
+  .table-scroll::-webkit-scrollbar { height: 4px; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--surface2); }
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.1s;
+  }
+  th:hover { color: var(--ink); }
+  th.sort-on { color: var(--ink); }
+  th .sort-arrow { font-size: 8px; margin-left: 3px; }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.08s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  td { padding: 11px 16px; color: var(--ink-2); vertical-align: middle; }
+  td.td-name { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  td.td-title { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.td-company { white-space: nowrap; }
+  td.td-desc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ink-3); }
+
+  /* Badges */
+  .tier-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .t-exec     { background: #fdf3e7; color: #a05e1a; border-color: #f0c484; }
+  .t-senior   { background: var(--teal-lt); color: var(--teal); border-color: rgba(42,124,114,0.25); }
+  .t-mid      { background: var(--blue-lt); color: var(--blue); border-color: rgba(42,95,201,0.2); }
+  .t-consult  { background: #f3f0fd; color: #6d45c2; border-color: #c9bff5; }
+  .t-sme      { background: var(--red-lt); color: var(--red); border-color: rgba(192,57,43,0.2); }
+
+  .avail-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px;
+  }
+  .avail-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .ad-yes  { background: var(--green); }
+  .ad-soon { background: var(--amber); }
+  .ad-no   { background: var(--ink-4); }
+
+  .score-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-track {
+    width: 60px; height: 3px;
+    background: var(--bg2);
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--amber));
+    border-radius: 2px;
+  }
+  .score-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  .match-chips { display: flex; gap: 3px; flex-wrap: wrap; }
+  .match-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .mc-title   { background: var(--blue-lt);  color: var(--blue);  border-color: rgba(42,95,201,0.2); }
+  .mc-desc    { background: var(--teal-lt);  color: var(--teal);  border-color: rgba(42,124,114,0.2); }
+  .mc-company { background: var(--amber-lt); color: var(--amber); border-color: var(--amber-md); }
+
+  /* ─── Empty / Loading ─── */
+  .empty {
+    text-align: center;
+    padding: 56px 20px;
+  }
+  .empty-icon {
+    font-size: 32px; opacity: 0.2;
+    margin-bottom: 12px;
+  }
+  .empty-h {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px; color: var(--ink-2);
+    margin-bottom: 5px;
+  }
+  .empty-sub {
+    font-size: 12px;
+    color: var(--ink-4);
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -500px 0; }
+    100% { background-position: 500px 0; }
+  }
+  .shimmer-row td {
+    padding: 14px 16px;
+  }
+  .shimmer-cell {
+    height: 12px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
+    background-size: 500px 100%;
+    animation: shimmer 1.1s infinite;
+  }
+
+  /* ─── Pagination ─── */
+  .pag-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .pag-info {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+  }
+  .pag-btns { display: flex; gap: 3px; }
+  .pag-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .pag-btn:hover { border-color: var(--border-md); color: var(--ink); }
+  .pag-btn.cur { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  /* ─── Active filters summary ─── */
+  .active-summary {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .sum-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--surface);
+    border: 1px solid var(--border-md);
+    color: var(--ink-2);
+    display: flex; align-items: center; gap: 4px;
+    white-space: nowrap;
+  }
+  .sum-req { border-color: var(--amber-md); color: var(--amber); background: var(--amber-lt); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-row { animation: fadeUp 0.2s ease forwards; }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ─── Natural Language Bar ─── */
+  .nl-wrap {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px 36px 0;
+  }
+  .nl-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .nl-panel:focus-within {
+    box-shadow: 0 0 0 3px rgba(201,124,42,0.12), var(--shadow);
+    border-color: var(--amber-md);
+  }
+  .nl-panel.loading {
+    border-color: var(--amber-md);
+    box-shadow: 0 0 0 3px rgba(201,124,42,0.12), var(--shadow);
+  }
+  .nl-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .nl-spark {
+    padding: 14px 14px 14px 16px;
+    font-size: 18px;
+    color: var(--amber);
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+  .nl-textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Figtree', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink);
+    padding: 14px 0 14px 0;
+    resize: none;
+    outline: none;
+    min-height: 52px;
+    max-height: 120px;
+    line-height: 1.6;
+  }
+  .nl-textarea::placeholder { color: var(--ink-4); }
+  .nl-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .btn-nl-run {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--ink);
+    border: none;
+    border-radius: var(--r);
+    color: #fff;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.14s;
+    white-space: nowrap;
+  }
+  .btn-nl-run:hover { background: #2e2c29; box-shadow: var(--shadow); }
+  .btn-nl-run:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-nl-run .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .nl-examples {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 8px 16px 12px 46px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .nl-ex-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.5px;
+    align-self: center;
+    white-space: nowrap;
+  }
+  .nl-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border-md);
+    background: var(--surface);
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: all 0.1s;
+    white-space: nowrap;
+  }
+  .nl-chip:hover { border-color: var(--amber-md); color: var(--amber); background: var(--amber-lt); }
+
+  /* ─── AI interpretation toast ─── */
+  .nl-result {
+    margin: 10px 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    display: none;
+  }
+  .nl-result.visible { display: block; }
+  .nl-result-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--green-lt);
+    border-bottom: 1px solid #c8e8d6;
+  }
+  .nl-result-head.error-head {
+    background: var(--red-lt);
+    border-bottom-color: #f5c6c2;
+  }
+  .nl-result-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    color: var(--green);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nl-result-label.error-label { color: var(--red); }
+  .nl-result-dismiss {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    cursor: pointer;
+    background: none; border: none;
+    transition: color 0.1s;
+  }
+  .nl-result-dismiss:hover { color: var(--ink); }
+  .nl-result-body {
+    padding: 10px 14px 12px;
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .nl-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border-md);
+    background: var(--bg2);
+    color: var(--ink-2);
+    margin: 2px 2px 2px 0;
+  }
+  .nl-tag.req { background: var(--amber-lt); border-color: var(--amber-md); color: var(--amber); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="data:image/webp;base64,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" alt="We Are Rosie" style="height:30px;width:auto;display:block;">
+    <div class="logo-sep"></div>
+    <div class="logo-product">Talent Intelligence</div>
+  </div>
+  <div class="header-meta">
+    <div class="db-pill">● WRR Data Warehouse</div>
+  </div>
+</header>
+
+<div class="nl-wrap">
+  <div class="nl-panel" id="nlPanel">
+    <div class="nl-inner">
+      <div class="nl-spark">✦</div>
+      <textarea
+        class="nl-textarea"
+        id="nlInput"
+        placeholder="Describe who you're looking for… e.g. &quot;Senior copywriters or art directors at Fortune 500 companies, available now, 10+ years experience&quot;"
+        rows="1"
+        onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); runNL(); }"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"
+      ></textarea>
+      <div class="nl-actions">
+        <button class="btn-nl-run" id="nlBtn" onclick="runNL()">
+          <span id="nlBtnIcon">✦</span>
+          <span id="nlBtnLabel">Build Search</span>
+        </button>
+      </div>
+    </div>
+    <div class="nl-examples">
+      <span class="nl-ex-label">Try:</span>
+      <span class="nl-chip" onclick="setNL(this.textContent)">C-suite AI leaders available now</span>
+      <span class="nl-chip" onclick="setNL(this.textContent)">Senior copywriters or art directors, 8+ years</span>
+      <span class="nl-chip" onclick="setNL(this.textContent)">Performance marketers with ROAS and paid social experience</span>
+      <span class="nl-chip" onclick="setNL(this.textContent)">Creative directors at tech companies, 10+ years</span>
+      <span class="nl-chip" onclick="setNL(this.textContent)">Brand strategists available now at consumer brands</span>
+    </div>
+  </div>
+  <div class="nl-result" id="nlResult">
+    <div class="nl-result-head" id="nlResultHead">
+      <div class="nl-result-label" id="nlResultLabel">✓ Search built from your prompt</div>
+      <button class="nl-result-dismiss" onclick="document.getElementById('nlResult').classList.remove('visible')">dismiss</button>
+    </div>
+    <div class="nl-result-body" id="nlResultBody"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ═══ LEFT: Filter Builder ═══ -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- Filter Groups -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div class="pt-icon pt-amber">⊞</div>
+          Search Criteria
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-4)">Each group is a filter gate</span>
+      </div>
+      <div class="panel-body">
+        <div class="filter-groups" id="filterGroups"></div>
+        <button class="btn-add-group" onclick="addGroup()">
+          <span style="font-size:16px;line-height:1">+</span> Add Filter Group
+        </button>
+      </div>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div class="pt-icon pt-ink">⚙</div>
+          Additional Filters
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="adv-grid">
+          <div class="adv-group">
+            <label>Seniority Tier</label>
+            <select class="adv-select" id="fSeniority">
+              <option value="">All Levels</option>
+              <option>Exec / C-Suite</option>
+              <option>Senior Leadership</option>
+              <option>Middle Manager / Junior</option>
+              <option>Consulting Bench</option>
+              <option>SME Bench</option>
+            </select>
+          </div>
+          <div class="adv-group">
+            <label>Availability</label>
+            <select class="adv-select" id="fAvailability">
+              <option value="">Any</option>
+              <option>Available Now</option>
+              <option>Available Soon</option>
+              <option>Not Available</option>
+            </select>
+          </div>
+          <div class="adv-group">
+            <label>Min. Yrs Experience</label>
+            <select class="adv-select" id="fYears">
+              <option value="0">Any</option>
+              <option value="3">3+ years</option>
+              <option value="8">8+ years</option>
+              <option value="15">15+ years</option>
+              <option value="20">20+ years</option>
+            </select>
+          </div>
+          <div class="adv-group">
+            <label>Min. Match Score</label>
+            <select class="adv-select" id="fScore">
+              <option value="0">Any Score</option>
+              <option value="50">50%+</option>
+              <option value="70">70%+</option>
+              <option value="85">85%+</option>
+            </select>
+          </div>
+          <div class="adv-group" style="grid-column:1/-1">
+            <label>Location</label>
+            <input class="adv-input" id="fLocation" placeholder="e.g. New York, Chicago...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn-run" onclick="runQuery()">Search Profiles</button>
+      <button class="btn-clear" onclick="clearAll()">Clear All</button>
+    </div>
+
+  </div>
+
+  <!-- ═══ RIGHT: Results ═══ -->
+  <div class="right-col">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-box-label">Profiles Found</div>
+        <div class="stat-box-val" id="sTotal">—</div>
+        <div class="stat-box-sub" id="sTotalSub"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-label">Available Now</div>
+        <div class="stat-box-val" id="sAvail">—</div>
+        <div class="stat-box-sub" id="sAvailSub"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-label">Avg. Match Score</div>
+        <div class="stat-box-val" id="sScore">—</div>
+        <div class="stat-box-sub" id="sScoreSub"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-label">Required Gates</div>
+        <div class="stat-box-val" id="sGates">—</div>
+        <div class="stat-box-sub" id="sGatesSub"></div>
+      </div>
+    </div>
+
+    <!-- Results table -->
+    <div class="results-panel">
+      <div class="results-head">
+        <div class="results-title-row">
+          <div class="results-h">Profile Results</div>
+          <div class="results-badge" id="rCount">0 profiles</div>
+        </div>
+        <div class="results-actions">
+          <select class="sort-sel" id="sortSel" onchange="doSort()">
+            <option value="score_desc">Score ↓</option>
+            <option value="score_asc">Score ↑</option>
+            <option value="name_asc">Name A–Z</option>
+            <option value="name_desc">Name Z–A</option>
+            <option value="yrs_desc">Exp. ↓</option>
+          </select>
+          <button class="btn-export" onclick="doExport()">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Active filter summary pills -->
+      <div class="active-summary" id="activeSummary" style="display:none"></div>
+
+      <div id="resultsArea">
+        <div class="empty">
+          <div class="empty-icon">⌕</div>
+          <div class="empty-h">Build your search above</div>
+          <div class="empty-sub">Add filter groups, set keywords and fields, then click Search Profiles</div>
+        </div>
+      </div>
+
+      <div id="pagRow" style="display:none" class="pag-row">
+        <div class="pag-info" id="pagInfo"></div>
+        <div class="pag-btns" id="pagBtns"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────
+// NATURAL LANGUAGE → FILTER BUILDER
+// ────────────────────────────────────────────
+
+function setNL(text) {
+  const ta = document.getElementById('nlInput');
+  ta.value = text;
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+}
+
+async function runNL() {
+  const prompt = document.getElementById('nlInput').value.trim();
+  if (!prompt) return;
+
+  const btn    = document.getElementById('nlBtn');
+  const icon   = document.getElementById('nlBtnIcon');
+  const label  = document.getElementById('nlBtnLabel');
+  const panel  = document.getElementById('nlPanel');
+  const result = document.getElementById('nlResult');
+
+  // Loading state
+  btn.disabled = true;
+  icon.outerHTML = '<span id="nlBtnIcon" class="spinner"></span>';
+  document.getElementById('nlBtnLabel').textContent = 'Thinking…';
+  panel.classList.add('loading');
+  result.classList.remove('visible');
+
+  const systemPrompt = `You are a talent search assistant for We Are Rosie (WRR), a staffing and talent platform.
+
+Your job is to parse a natural language talent search request and return a structured JSON object that maps to search filter groups.
+
+The data warehouse has these fields per experience record:
+- title (job title / position)
+- description (role description / bio)
+- company (employer name)
+
+Available seniority tiers (use EXACTLY one of these or leave blank):
+- "Exec / C-Suite"
+- "Senior Leadership"
+- "Middle Manager / Junior"
+- "Consulting Bench"
+- "SME Bench"
+
+Available availability values:
+- "Available Now"
+- "Available Soon"
+- "Not Available"
+- "" (any)
+
+Return ONLY valid JSON with this exact structure, no markdown, no explanation:
+{
+  "groups": [
+    {
+      "name": "Group label (short, descriptive)",
+      "keywords": "keyword1\\nkeyword2\\nkeyword3",
+      "fields": ["title", "desc"],
+      "required": true,
+      "logic": "OR"
+    }
+  ],
+  "filters": {
+    "seniority": "",
+    "availability": "",
+    "minYears": 0,
+    "location": ""
+  },
+  "summary": "One sentence explaining what you built and why"
+}
+
+Rules:
+- Create 1–4 filter groups based on distinct semantic clusters in the request (e.g. role titles, skills, company types)
+- For role/title keywords always include both exact and variant forms (e.g. "copywriter", "copy writer", "content writer")
+- Mark a group as required:true if the user clearly implies it is a hard requirement (e.g. "must have", "only", "specifically")
+- If multiple concepts are mentioned with "or", use logic:"OR" within that group
+- If the user says "and" between two concepts that are distinct (e.g. "AI skills AND brand strategy"), put them in separate groups
+- Use "title" and "desc" fields by default; add "company" only if the user references specific companies or company types
+- For minYears, extract numeric years if mentioned (e.g. "10+ years" → 10, "senior" alone → 0)
+- For availability, only set if user explicitly mentions it (e.g. "available now", "immediately available")
+- Keep keywords lowercase
+- keywords field must be a newline-separated string (\\n between each keyword)`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const raw  = data.content?.[0]?.text || '';
+
+    // Strip any accidental markdown fences
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const parsed  = JSON.parse(cleaned);
+
+    // ── Apply to UI ──
+    applyNLResult(parsed);
+
+    // ── Show interpretation card ──
+    showNLResult(parsed, prompt);
+
+    // ── Auto-run search ──
+    setTimeout(() => runQuery(), 200);
+
+  } catch (err) {
+    console.error('NL error:', err);
+    const head = document.getElementById('nlResultHead');
+    const lbl  = document.getElementById('nlResultLabel');
+    const body = document.getElementById('nlResultBody');
+    head.className = 'nl-result-head error-head';
+    lbl.className  = 'nl-result-label error-label';
+    lbl.textContent = '✕ Could not parse request';
+    body.textContent = 'Try rephrasing or use the manual filter builder below.';
+    result.classList.add('visible');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('nlBtnIcon').outerHTML = '<span id="nlBtnIcon">✦</span>';
+    document.getElementById('nlBtnLabel').textContent = 'Build Search';
+    panel.classList.remove('loading');
+  }
+}
+
+function applyNLResult(parsed) {
+  // Clear existing groups
+  groups = [];
+  groupIdSeq = 0;
+
+  // Add each group from AI response
+  (parsed.groups || []).forEach(g => {
+    addGroup({
+      name:     g.name     || 'Group',
+      keywords: g.keywords || '',
+      fields:   g.fields   || ['title', 'desc'],
+      required: g.required ?? false,
+      logic:    g.logic    || 'OR',
+    });
+  });
+
+  // Apply advanced filters
+  const f = parsed.filters || {};
+
+  const senEl = document.getElementById('fSeniority');
+  if (f.seniority) {
+    for (let i = 0; i < senEl.options.length; i++) {
+      if (senEl.options[i].text === f.seniority) { senEl.selectedIndex = i; break; }
+    }
+  } else { senEl.selectedIndex = 0; }
+
+  const avEl = document.getElementById('fAvailability');
+  if (f.availability) {
+    for (let i = 0; i < avEl.options.length; i++) {
+      if (avEl.options[i].text === f.availability) { avEl.selectedIndex = i; break; }
+    }
+  } else { avEl.selectedIndex = 0; }
+
+  const yrEl = document.getElementById('fYears');
+  if (f.minYears && f.minYears > 0) {
+    const target = f.minYears;
+    const thresholds = [0, 3, 8, 15, 20];
+    const best = thresholds.filter(t => t <= target).pop() || 0;
+    for (let i = 0; i < yrEl.options.length; i++) {
+      if (parseInt(yrEl.options[i].value) === best) { yrEl.selectedIndex = i; break; }
+    }
+  } else { yrEl.selectedIndex = 0; }
+
+  document.getElementById('fScore').selectedIndex = 0;
+  document.getElementById('fLocation').value = f.location || '';
+}
+
+function showNLResult(parsed, originalPrompt) {
+  const result = document.getElementById('nlResult');
+  const head   = document.getElementById('nlResultHead');
+  const lbl    = document.getElementById('nlResultLabel');
+  const body   = document.getElementById('nlResultBody');
+
+  head.className = 'nl-result-head';
+  lbl.className  = 'nl-result-label';
+  lbl.innerHTML  = '✓ &nbsp;Search built — running now…';
+
+  // Build summary HTML
+  const groupTags = (parsed.groups || []).map(g => {
+    const kws = g.keywords.split('\n').filter(Boolean);
+    const reqClass = g.required ? 'nl-tag req' : 'nl-tag';
+    const kwDisplay = kws.slice(0, 4).map(k => `<span class="nl-tag">${k}</span>`).join('') +
+      (kws.length > 4 ? `<span class="nl-tag">+${kws.length - 4} more</span>` : '');
+    return `<div style="margin-bottom:6px">
+      <span class="${reqClass}" style="margin-right:4px">${g.required ? '🔒 ' : ''}${g.name}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-4);margin-right:6px">[${g.fields.join('+')} · ${g.logic}]</span>
+      ${kwDisplay}
+    </div>`;
+  }).join('');
+
+  const f = parsed.filters || {};
+  const filterBits = [
+    f.seniority    ? `<span class="nl-tag">Tier: ${f.seniority}</span>` : '',
+    f.availability ? `<span class="nl-tag">Avail: ${f.availability}</span>` : '',
+    f.minYears > 0 ? `<span class="nl-tag">${f.minYears}+ yrs</span>` : '',
+    f.location     ? `<span class="nl-tag">Loc: ${f.location}</span>` : '',
+  ].filter(Boolean).join('');
+
+  body.innerHTML = `
+    <div style="margin-bottom:8px;font-style:italic;color:var(--ink-3);font-size:12px">"${originalPrompt}"</div>
+    ${groupTags}
+    ${filterBits ? `<div style="margin-top:4px">${filterBits}</div>` : ''}
+    ${parsed.summary ? `<div style="margin-top:8px;font-size:11px;color:var(--ink-3);border-top:1px solid var(--border);padding-top:8px">${parsed.summary}</div>` : ''}
+  `;
+  result.classList.add('visible');
+}
+
+
+const DUMMY = [
+  { id:1,  name:'Jordan Reeves',     title:'Chief Marketing Officer',              company:'Apple',                    location:'New York, NY',      years:22, tier:'Exec / C-Suite',         avail:'yes',  score:96, fields_matched:['title','company'], kw_hit:['chief marketing officer','cmo','apple'],                    desc:'Led global brand transformation and AI-powered creative operations for Fortune 100 clients. Expert in martech stack, genai workflow, and organizational design.' },
+  { id:2,  name:'Maya Okonkwo',      title:'SVP, Retail Media Strategy',           company:'Amazon',                   location:'Seattle, WA',       years:18, tier:'Exec / C-Suite',         avail:'soon', score:94, fields_matched:['title','company'], kw_hit:['svp','retail media','amazon'],                              desc:'Built and scaled Amazon\'s retail media network strategy. Deep expertise in DSP, SSP, data clean rooms, and commerce media partnerships.' },
+  { id:3,  name:'Derek Lim',         title:'VP of AI Strategy & Innovation',       company:'Alphabet (Google)',         location:'San Francisco, CA', years:14, tier:'Senior Leadership',      avail:'yes',  score:91, fields_matched:['title','company'], kw_hit:['vp','ai strategy','google','genai'],                        desc:'Pioneered enterprise AI roadmap and LLM deployment across Google\'s ad products. Speaker at multiple AI governance forums. Published in responsible AI.' },
+  { id:4,  name:'Priya Sharma',      title:'Engagement Manager',                   company:'JPMorgan Chase',           location:'Chicago, IL',       years:11, tier:'Consulting Bench',        avail:'yes',  score:89, fields_matched:['title','company','desc'], kw_hit:['engagement manager','jpmorgan','go-to-market'],         desc:'Led cross-functional workstreams in commercial due diligence, GTM strategy, and organizational design for media & entertainment clients.' },
+  { id:5,  name:'Carlos Estrada',    title:'Creative Director, Generative AI',     company:'Meta Platforms',           location:'Los Angeles, CA',   years:9,  tier:'Senior Leadership',      avail:'no',   score:87, fields_matched:['title','company'], kw_hit:['creative director','ai','meta','midjourney'],               desc:'Pioneered generative AI creative workflow at Meta. Expert in midjourney, runway, and DALL-E integration into production pipelines.' },
+  { id:6,  name:'Simone Beaumont',   title:'Principal, Digital Transformation',    company:'Goldman Sachs',            location:'Boston, MA',        years:16, tier:'Consulting Bench',        avail:'yes',  score:85, fields_matched:['title','company','desc'], kw_hit:['principal','goldman sachs','digital transformation','operating model'], desc:'P&L owner for Goldman\'s Digital Transformation practice. Led organizational redesigns for FTSE 100 and Fortune 500 clients.' },
+  { id:7,  name:'Tariq Williams',    title:'Head of Programmatic & AdTech',        company:'Microsoft',                location:'London, UK',        years:13, tier:'Senior Leadership',      avail:'soon', score:83, fields_matched:['title','company'], kw_hit:['head of','programmatic','adtech','microsoft','dsp','ctv'],  desc:'Built Microsoft\'s programmatic buying center from the ground up. Deep DSP/SSP relationships, clean room implementation, and CTV strategy.' },
+  { id:8,  name:'Naomi Chen',        title:'Senior Director, Performance Marketing',company:'Target',                  location:'Minneapolis, MN',   years:10, tier:'Senior Leadership',      avail:'yes',  score:81, fields_matched:['title','desc'], kw_hit:['senior director','performance marketing','roas'],              desc:'Drove $2B in digital revenue through paid search, paid social, and attribution modeling at Target. Expert in customer acquisition and ROAS optimization.' },
+  { id:9,  name:'Ethan Goldberg',    title:'Managing Director, Strategy & Growth', company:'Morgan Stanley',           location:'New York, NY',      years:20, tier:'SME Bench',              avail:'no',   score:79, fields_matched:['title','company','desc'], kw_hit:['managing director','morgan stanley','growth strategy','m&a'], desc:'20+ years at Morgan Stanley leading M&A due diligence and post-merger integration for global media, retail, and fintech clients.' },
+  { id:10, name:'Aaliyah Roberts',   title:'VP Brand Strategy',                    company:'Nike',                     location:'Portland, OR',      years:12, tier:'Senior Leadership',      avail:'yes',  score:78, fields_matched:['title','company','desc'], kw_hit:['vp','brand strategy','nike','brand positioning'],         desc:'Led Nike\'s global brand positioning and narrative strategy across digital, experiential, and retail channels.' },
+  { id:11, name:'James Park',        title:'Associate, AI & Data Strategy',        company:'IBM',                      location:'San Francisco, CA', years:5,  tier:'Consulting Bench',        avail:'yes',  score:75, fields_matched:['title','company','desc'], kw_hit:['associate','ibm','ai roadmap','data strategy','genai'],  desc:'Specializes in enterprise AI adoption and LLM strategy for IBM\'s tech sector clients. Co-authored IBM\'s AI governance framework white paper.' },
+  { id:12, name:'Rachel Torres',     title:'Director, Martech & Marketing Ops',    company:'Citigroup',                location:'Austin, TX',        years:8,  tier:'Senior Leadership',      avail:'soon', score:74, fields_matched:['title','company','desc'], kw_hit:['director','martech','citigroup','cdp','crm implementation'], desc:'Built Citigroup\'s Marketing Cloud implementation practice. Expert in CDP architecture, CRM integration, and marketing automation at enterprise scale.' },
+  { id:13, name:'David Mensah',      title:'Chief Strategy Officer',               company:'Oracle',                   location:'Atlanta, GA',       years:24, tier:'SME Bench',              avail:'yes',  score:92, fields_matched:['title','desc'], kw_hit:['chief strategy','oracle','advisory board','retail media','thought leadership'], desc:'Co-founded two venture-backed adtech companies prior to Oracle. Board advisor at 4 retail media startups. Keynote speaker at Cannes Lions and DMEXCO.' },
+  { id:14, name:'Yuki Tanaka',       title:'Senior Manager, Organizational Design',company:'Cisco Systems',            location:'Chicago, IL',       years:9,  tier:'Consulting Bench',        avail:'no',   score:72, fields_matched:['title','company','desc'], kw_hit:['senior manager','cisco','organizational design','operating model','change management'], desc:'Led org design and operating model transformations for financial services, insurance, and healthcare clients.' },
+  { id:15, name:'Amara Jackson',     title:'Head of Creative Technology',          company:'Meta Platforms',           location:'Menlo Park, CA',    years:11, tier:'Senior Leadership',      avail:'yes',  score:88, fields_matched:['title','company','desc'], kw_hit:['head of','creative technologist','meta','ai-powered','stable diffusion'], desc:'Built Meta\'s internal creative technology team specializing in AI-powered content generation, generative design tooling, and prompt engineering workflows.' },
+  { id:16, name:'Luis Fernandez',    title:'Senior Copywriter, Brand Voice',       company:'Walmart',                  location:'New York, NY',      years:7,  tier:'Middle Manager / Junior', avail:'yes',  score:70, fields_matched:['title','desc'], kw_hit:['copywriter','brand voice','content writer'],                desc:'Award-winning copywriter with deep experience in brand voice strategy, long-form content, and campaign concepting for global brands.' },
+  { id:17, name:'Hana Watanabe',     title:'Senior Graphic Designer',              company:'Apple',                    location:'Cupertino, CA',     years:9,  tier:'Senior Leadership',      avail:'soon', score:77, fields_matched:['title','company'], kw_hit:['graphic designer','designer','apple'],                      desc:'Senior graphic designer at Apple working on brand systems, product UI, and global campaign art direction.' },
+  { id:18, name:'Marcus Bell',       title:'Art Director',                         company:'Procter & Gamble',         location:'Chicago, IL',       years:12, tier:'Senior Leadership',      avail:'yes',  score:82, fields_matched:['title','desc'], kw_hit:['art director','creative direction','concepting'],           desc:'Integrated art director with 12 years leading campaigns for CPG, automotive, and tech brands. Expert in visual storytelling and campaign development.' },
+  { id:19, name:'Fatima Hassan',     title:'Chief Digital Officer',                company:'AT&T',                     location:'Dallas, TX',        years:19, tier:'Exec / C-Suite',         avail:'yes',  score:93, fields_matched:['title','company'], kw_hit:['chief digital officer','cdo','at&t','digital transformation'], desc:'Transformed AT&T\'s digital customer experience across mobile, broadband, and entertainment verticals. Expert in AI-driven personalization and omnichannel strategy.' },
+  { id:20, name:'Brandon Cole',      title:'Performance Marketing Manager',        company:'Starbucks',                location:'Seattle, WA',       years:6,  tier:'Middle Manager / Junior', avail:'yes',  score:68, fields_matched:['title','company','desc'], kw_hit:['performance marketing','paid social','paid search','roas'], desc:'Managed $50M+ in paid media across Google, Meta, and programmatic channels for Starbucks digital campaigns.' },
+  { id:21, name:'Sophia Rivera',     title:'Senior Data Scientist, AI Platform',   company:'Amazon',                   location:'Seattle, WA',       years:8,  tier:'Senior Leadership',      avail:'no',   score:76, fields_matched:['title','company','desc'], kw_hit:['data scientist','ai platform','llm','amazon','machine learning'], desc:'Built Amazon\'s recommendation AI platform serving 400M+ customers. Expert in LLM fine-tuning, MLOps, and real-time inference pipelines.' },
+  { id:22, name:'Isaiah Thompson',   title:'Executive Creative Director',          company:'Johnson & Johnson',        location:'New York, NY',      years:17, tier:'Exec / C-Suite',         avail:'yes',  score:90, fields_matched:['title','company'], kw_hit:['executive creative director','ecd','creative leadership','johnson & johnson'], desc:'Led creative transformation across J&J\'s healthcare and consumer brands. Expert in purpose-driven storytelling, campaign development, and global creative teams.' },
+  { id:23, name:'Claire Dubois',     title:'VP, Product Marketing',               company:'Microsoft',                location:'Redmond, WA',       years:13, tier:'Senior Leadership',      avail:'soon', score:84, fields_matched:['title','company','desc'], kw_hit:['vp','product marketing','microsoft','go-to-market','product strategy'], desc:'Led GTM strategy for Microsoft Azure and Microsoft 365 enterprise products. Deep expertise in SaaS product positioning and launch strategy.' },
+  { id:24, name:'Kwame Asante',      title:'Global Head of Media Strategy',        company:'Alphabet (Google)',         location:'San Francisco, CA', years:15, tier:'Exec / C-Suite',         avail:'yes',  score:91, fields_matched:['title','company'], kw_hit:['global head','media strategy','google','media planning','media buying'], desc:'Architected Google\'s global media investment strategy across search, video, and display. Expert in cross-market media governance and programmatic strategy.' },
+  { id:25, name:'Leila Moradi',      title:'Senior Brand Strategist',              company:'PepsiCo',                  location:'New York, NY',      years:8,  tier:'Senior Leadership',      avail:'yes',  score:73, fields_matched:['title','company','desc'], kw_hit:['senior brand strategist','brand strategy','brand positioning','pepsico'], desc:'Developed brand architecture and positioning frameworks for PepsiCo\'s portfolio of 20+ global brands. Expert in consumer insights and brand narrative.' },
+  { id:26, name:'Tyler Brooks',      title:'Martech Implementation Lead',          company:'Home Depot',               location:'Atlanta, GA',       years:7,  tier:'Middle Manager / Junior', avail:'soon', score:66, fields_matched:['title','company','desc'], kw_hit:['martech','marketing technology','marketing automation','cdp','home depot'], desc:'Led implementation of Adobe Experience Cloud and Salesforce CDP at Home Depot. Expertise in martech stack auditing and integration.' },
+  { id:27, name:'Nina Patel',        title:'Chief AI Officer',                     company:'Pfizer',                   location:'Cambridge, MA',     years:21, tier:'Exec / C-Suite',         avail:'no',   score:95, fields_matched:['title','company'], kw_hit:['chief ai officer','caio','pfizer','ai strategy','ai governance','responsible ai'], desc:'Pioneered AI-driven drug discovery and clinical trial optimization at Pfizer. Built enterprise AI governance framework and responsible AI policy.' },
+  { id:28, name:'Rashida Grant',     title:'Program Manager, Digital Operations',  company:'FedEx',                    location:'Memphis, TN',       years:9,  tier:'Middle Manager / Junior', avail:'yes',  score:67, fields_matched:['title','company','desc'], kw_hit:['program manager','program management','project planning','cross-functional','fedex'], desc:'Led cross-functional digital ops programs across FedEx\'s logistics and last-mile delivery networks. Expert in stakeholder management and risk mitigation.' },
+  { id:29, name:'Aiden Clarke',      title:'Creative Strategist, Social & Content',company:'Nike',                     location:'Portland, OR',      years:5,  tier:'Middle Manager / Junior', avail:'yes',  score:65, fields_matched:['title','company','desc'], kw_hit:['creative strategist','content strategy','social media','nike','campaign development'], desc:'Developed creative strategy for Nike\'s global social media channels. Expert in short-form video, UGC, and creator partnerships.' },
+  { id:30, name:'Monica Chang',      title:'Director of Product Management',       company:'Intel',                    location:'Santa Clara, CA',   years:11, tier:'Senior Leadership',      avail:'no',   score:79, fields_matched:['title','company','desc'], kw_hit:['director of product','product strategy','product roadmap','intel','agile'], desc:'Led product roadmap for Intel\'s AI accelerator chip line. Expert in agile delivery, cross-functional leadership, and hardware-software GTM.' },
+  { id:31, name:'Devin Okafor',      title:'Senior Manager, Paid Media',           company:'Bank of America',          location:'Charlotte, NC',     years:8,  tier:'Senior Leadership',      avail:'yes',  score:72, fields_matched:['title','company','desc'], kw_hit:['senior manager','paid media','paid search','paid social','sem','ppc','bank of america'], desc:'Managed $200M+ in paid media investment for Bank of America. Deep expertise in SEM, programmatic, and attribution modeling.' },
+  { id:32, name:'Ingrid Sorenson',   title:'Head of Brand & Creative',             company:'Costco',                   location:'Issaquah, WA',      years:14, tier:'Senior Leadership',      avail:'soon', score:80, fields_matched:['title','company','desc'], kw_hit:['head of brand','brand strategy','creative direction','costco'], desc:'Led Costco\'s brand refresh and creative overhaul across digital and in-store experiences. Expert in brand identity and integrated campaign development.' },
+  { id:33, name:'Omar Sheikh',       title:'Chief Growth Officer',                 company:'UnitedHealth Group',       location:'Minneapolis, MN',   years:23, tier:'Exec / C-Suite',         avail:'yes',  score:94, fields_matched:['title','company'], kw_hit:['chief growth officer','cgo','unitedhealth','growth strategy','revenue growth'], desc:'Drove $4B+ in new revenue at UnitedHealth Group through B2B growth strategy, market entry, and M&A. Board advisor and keynote speaker.' },
+  { id:34, name:'Priscilla Monroe',  title:'Associate Consultant, Strategy',       company:'CVS Health',               location:'Woonsocket, RI',    years:4,  tier:'Consulting Bench',        avail:'yes',  score:63, fields_matched:['title','company','desc'], kw_hit:['associate','consultant','strategy analyst','cvs','competitive analysis','benchmarking'], desc:'Supported strategic analysis, competitive benchmarking, and go-to-market work for CVS Health\'s retail pharmacy and MinuteClinic divisions.' },
+  { id:35, name:'Jomo Williams',     title:'VP of Growth Marketing',               company:'Ford Motor Company',       location:'Detroit, MI',       years:12, tier:'Senior Leadership',      avail:'yes',  score:77, fields_matched:['title','company','desc'], kw_hit:['vp','growth marketing','demand generation','ford','customer acquisition','conversion rate'], desc:'Built Ford\'s performance marketing capability from scratch. Expert in demand generation, conversion optimization, and multi-touch attribution.' },
+  { id:36, name:'Elena Vasquez',     title:'Senior Content Writer & UX',           company:'Kroger',                   location:'Cincinnati, OH',    years:6,  tier:'Middle Manager / Junior', avail:'soon', score:64, fields_matched:['title','desc'], kw_hit:['content writer','ux writing','copywriter','content strategy'],  desc:'UX content strategist and copywriter at Kroger Digital. Writes product UI strings, onboarding flows, and email campaigns for 10M+ users.' },
+  { id:37, name:'Calvin Price',      title:'Executive VP, Digital & Technology',   company:'General Electric',         location:'Boston, MA',        years:25, tier:'Exec / C-Suite',         avail:'no',   score:92, fields_matched:['title','company'], kw_hit:['evp','executive vice president','general electric','digital transformation','ai strategy'], desc:'Led GE\'s enterprise digital and AI transformation, deploying Predix platform across industrial IoT, analytics, and automation use cases.' },
+  { id:38, name:'Jasmine Holloway',  title:'Martech & Marketing Ops Manager',      company:'Wells Fargo',              location:'San Francisco, CA', years:7,  tier:'Middle Manager / Junior', avail:'yes',  score:69, fields_matched:['title','company','desc'], kw_hit:['martech','marketing operations','marketing automation','marketo','wells fargo','crm implementation'], desc:'Managed marketing automation stack (Marketo, Salesforce) and campaign operations for Wells Fargo\'s consumer banking division.' },
+  { id:39, name:'Park Ji-Ho',        title:'Senior UX & Product Designer',         company:'Cisco Systems',            location:'San Jose, CA',      years:8,  tier:'Senior Leadership',      avail:'yes',  score:74, fields_matched:['title','company','desc'], kw_hit:['senior designer','ux designer','graphic design','design systems','cisco'], desc:'Led design system and UX for Cisco\'s enterprise collaboration suite used by 20M+ daily users. Expert in component libraries and accessibility.' },
+  { id:40, name:'Bridget Osei',      title:'Chief Marketing Officer',              company:'Berkshire Hathaway',       location:'Omaha, NE',         years:20, tier:'Exec / C-Suite',         avail:'soon', score:89, fields_matched:['title','company'], kw_hit:['chief marketing officer','cmo','berkshire hathaway','brand strategy'], desc:'Oversaw brand positioning and communications for Berkshire Hathaway\'s diversified portfolio. Expert in corporate brand strategy and investor communications.' },
+  { id:41, name:'Marco Reyes',       title:'Project Manager, Marketing Technology',company:'Boeing',                   location:'Chicago, IL',       years:9,  tier:'Middle Manager / Junior', avail:'yes',  score:66, fields_matched:['title','company','desc'], kw_hit:['project manager','project management','pmp','boeing','stakeholder management','cross-functional'], desc:'Managed enterprise martech and digital transformation projects at Boeing. PMP-certified with expertise in resource allocation, risk management, and Agile delivery.' },
+  { id:42, name:'Diana Okonkwo',     title:'VP, Organizational Design & HR',       company:'Honeywell',                location:'Charlotte, NC',     years:16, tier:'Senior Leadership',      avail:'no',   score:81, fields_matched:['title','company','desc'], kw_hit:['vp','organizational design','org design','honeywell','operating model','change management','talent strategy'], desc:'Redesigned Honeywell\'s global operating model and workforce strategy post-merger. Expert in change management, capability building, and center of excellence design.' },
+  { id:43, name:'Andre Fontaine',    title:'Senior Manager, Brand Strategy',       company:'Citigroup',                location:'New York, NY',      years:10, tier:'Senior Leadership',      avail:'yes',  score:76, fields_matched:['title','company','desc'], kw_hit:['senior manager','brand strategy','brand positioning','citigroup','brand architecture'], desc:'Led Citigroup\'s global brand refresh and visual identity overhaul. Expert in financial services brand strategy and customer-centric positioning.' },
+  { id:44, name:'Keisha Lawson',     title:'Creative Director, Brand Campaigns',   company:'Procter & Gamble',         location:'Cincinnati, OH',    years:14, tier:'Senior Leadership',      avail:'yes',  score:85, fields_matched:['title','company','desc'], kw_hit:['creative director','creative leadership','brand campaigns','procter & gamble','campaign development','concepting'], desc:'Led integrated creative campaigns for P&G\'s top CPG brands including Tide, Pampers, and Olay. Expert in consumer insights-driven creative strategy.' },
+  { id:45, name:'Liam O\'Brien',     title:'Director, AI Implementation',          company:'Merck',                    location:'Rahway, NJ',        years:11, tier:'Senior Leadership',      avail:'soon', score:83, fields_matched:['title','company','desc'], kw_hit:['director','ai implementation','ai adoption','ai integration','merck','llm','machine learning'], desc:'Built Merck\'s AI implementation practice for drug discovery and regulatory automation. Expert in responsible AI, AI governance, and enterprise AI deployment.' },
+  { id:46, name:'Serena Oduya',      title:'Global Media Operations Lead',         company:'Walmart',                  location:'Bentonville, AR',   years:13, tier:'Senior Leadership',      avail:'yes',  score:80, fields_matched:['title','company','desc'], kw_hit:['global media','media operations','global media operations','media planning','media buying','walmart','media governance'], desc:'Led Walmart\'s global media operations center managing $1.2B in annual media investment across 28 markets. Expert in cross-market media governance.' },
+  { id:47, name:'Felix Hartmann',    title:'Senior Analyst, M&A Due Diligence',    company:'American Express',         location:'New York, NY',      years:7,  tier:'Consulting Bench',        avail:'no',   score:71, fields_matched:['title','company','desc'], kw_hit:['analyst','m&a','due diligence','commercial due diligence','american express','financial modeling','competitive analysis'], desc:'Conducted M&A due diligence and financial modeling for AmEx\'s strategic acquisitions and fintech investment portfolio.' },
+  { id:48, name:'Cassandra Moore',   title:'Head of Performance & Growth',         company:'Lowe\'s',                  location:'Mooresville, NC',   years:10, tier:'Senior Leadership',      avail:'yes',  score:78, fields_matched:['title','company','desc'], kw_hit:['head of','performance marketing','growth marketing','demand generation','lowe\'s','roas','paid media'], desc:'Built Lowe\'s performance marketing capability, managing $400M in annual digital media. Expert in omnichannel attribution and retail media network development.' },
+  { id:49, name:'Tobias Nguyen',     title:'AI & Data Platform Engineer',          company:'IBM',                      location:'Austin, TX',        years:6,  tier:'Middle Manager / Junior', avail:'yes',  score:69, fields_matched:['title','company','desc'], kw_hit:['ai platform','data platform','llm','ai workflow','prompt engineering','ibm','ai-powered'], desc:'Built IBM\'s internal AI platform for enterprise clients. Expert in LLM deployment, RAG pipelines, prompt engineering, and AI-assisted workflow automation.' },
+  { id:50, name:'Adaeze Ike',        title:'Chief Transformation Officer',         company:'General Motors',           location:'Detroit, MI',       years:22, tier:'Exec / C-Suite',         avail:'yes',  score:97, fields_matched:['title','company'], kw_hit:['chief transformation officer','general motors','digital transformation','organizational design','ai strategy'], desc:'Spearheaded GM\'s enterprise transformation from legacy auto to AI-powered mobility company. Expert in operating model redesign, AI strategy, and change management at scale.' },
+];
+
+// ────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────
+let groups = [];
+let groupIdSeq = 0;
+let results = [];
+let displayed = [];
+let currentPage = 1;
+const PER_PAGE = 10;
+let sortBy = 'score_desc';
+
+// ────────────────────────────────────────────
+// GROUP MANAGEMENT
+// ────────────────────────────────────────────
+function addGroup(presets) {
+  const id = ++groupIdSeq;
+  groups.push({
+    id,
+    name: presets?.name || `Group ${id}`,
+    keywords: presets?.keywords || '',
+    fields: presets?.fields || ['title'],
+    required: presets?.required ?? false,
+    logic: presets?.logic || 'OR',
+  });
+  renderGroups();
+}
+
+function removeGroup(id) {
+  groups = groups.filter(g => g.id !== id);
+  renderGroups();
+}
+
+function updateGroup(id, key, val) {
+  const g = groups.find(g => g.id === id);
+  if (g) g[key] = val;
+}
+
+function toggleGroupField(id, field) {
+  const g = groups.find(g => g.id === id);
+  if (!g) return;
+  const i = g.fields.indexOf(field);
+  if (i === -1) g.fields.push(field);
+  else g.fields.splice(i, 1); // allow full deselect — all grey
+  renderGroups();
+}
+
+function setGroupLogic(id, logic) {
+  updateGroup(id, 'logic', logic);
+  // update buttons
+  const el = document.getElementById(`grp-${id}`);
+  if (!el) return;
+  el.querySelectorAll('.logic-opt').forEach(b => {
+    b.classList.remove('active-or', 'active-and');
+    if (b.dataset.logic === logic) b.classList.add(`active-${logic.toLowerCase()}`);
+  });
+}
+
+function renderGroups() {
+  const container = document.getElementById('filterGroups');
+  if (!groups.length) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = groups.map(g => renderGroupHTML(g)).join('');
+  // Attach textarea listeners
+  groups.forEach(g => {
+    const ta = document.getElementById(`ta-${g.id}`);
+    if (ta) ta.addEventListener('input', e => updateGroup(g.id, 'keywords', e.target.value));
+    const ni = document.getElementById(`ni-${g.id}`);
+    if (ni) ni.addEventListener('input', e => updateGroup(g.id, 'name', e.target.value));
+    const rc = document.getElementById(`req-${g.id}`);
+    if (rc) rc.addEventListener('change', e => updateGroup(g.id, 'required', e.target.checked));
+  });
+}
+
+function renderGroupHTML(g) {
+  const fieldDefs = [
+    { key: 'title',   label: 'Title' },
+    { key: 'desc',    label: 'Description' },
+    { key: 'company', label: 'Company' },
+  ];
+
+  const fieldsHTML = fieldDefs.map(f => {
+    const checked = g.fields.includes(f.key);
+    const activeClass = checked ? ` checked-${f.key}` : '';
+    return `<div class="field-check${activeClass}" data-gid="${g.id}" data-field="${f.key}" onclick="toggleGroupField(${g.id},'${f.key}')">
+      <span class="field-check-label">${f.label}</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="filter-group" id="grp-${g.id}">
+    <div class="group-top">
+      <input id="ni-${g.id}" class="group-name-input" value="${g.name}" placeholder="Group name...">
+      <label class="req-wrap" title="If checked, all profiles MUST match this group">
+        <input type="checkbox" id="req-${g.id}" class="group-required" ${g.required ? 'checked' : ''}>
+        <div class="req-dot"></div>
+        <span class="req-label">REQUIRED</span>
+      </label>
+      <div class="logic-wrap">
+        <button class="logic-opt${g.logic === 'OR' ? ' active-or' : ''}" data-logic="OR" onclick="setGroupLogic(${g.id},'OR')">OR</button>
+        <button class="logic-opt${g.logic === 'AND' ? ' active-and' : ''}" data-logic="AND" onclick="setGroupLogic(${g.id},'AND')">AND</button>
+      </div>
+      <button class="btn-del-group" onclick="removeGroup(${g.id})" title="Remove group">×</button>
+    </div>
+    <div class="group-fields">${fieldsHTML}</div>
+    <div class="group-kw-area">
+      <textarea id="ta-${g.id}" class="kw-textarea" placeholder="Enter keywords, one per line&#10;e.g. copywriter&#10;content writer&#10;art director">${g.keywords}</textarea>
+      <div class="kw-hint">One keyword per line  ·  OR = match any  ·  AND = match all</div>
+    </div>
+  </div>`;
+}
+
+// ────────────────────────────────────────────
+// QUERY
+// ────────────────────────────────────────────
+function getKeywords(g) {
+  return g.keywords.split('\n')
+    .map(k => k.trim().toLowerCase())
+    .filter(k => k.length > 0);
+}
+
+function matchesGroup(profile, g) {
+  const kws = getKeywords(g);
+  if (!kws.length) return true; // empty keywords = no filter
+
+  // If no fields selected, search all three as fallback
+  const activeFields = g.fields.length > 0 ? g.fields : ['title', 'desc', 'company'];
+  const parts = [];
+  if (activeFields.includes('title'))   parts.push(profile.title.toLowerCase());
+  if (activeFields.includes('desc'))    parts.push(profile.desc.toLowerCase());
+  if (activeFields.includes('company')) parts.push(profile.company.toLowerCase());
+  const allText = parts.join(' ');
+
+  const checkKw = kw => allText.includes(kw);
+  return g.logic === 'OR' ? kws.some(checkKw) : kws.every(checkKw);
+}
+
+function runQuery() {
+  const seniority  = document.getElementById('fSeniority').value;
+  const avail      = document.getElementById('fAvailability').value;
+  const minYears   = parseInt(document.getElementById('fYears').value) || 0;
+  const minScore   = parseInt(document.getElementById('fScore').value) || 0;
+  const location   = document.getElementById('fLocation').value.trim().toLowerCase();
+
+  const nonEmpty = groups.filter(g => getKeywords(g).length > 0);
+  const required = nonEmpty.filter(g => g.required);
+  const optional = nonEmpty.filter(g => !g.required);
+
+  const hasAnyFilter = nonEmpty.length > 0 || seniority || avail ||
+                       minYears > 0 || minScore > 0 || location;
+
+  // If nothing at all is set, show the blank state
+  if (!hasAnyFilter) { resetResultsView(); return; }
+
+  // Loading shimmer
+  document.getElementById('resultsArea').innerHTML = `<table><tbody>
+    ${Array(6).fill(`<tr class="shimmer-row">${Array(6).fill('<td><div class="shimmer-cell"></div></td>').join('')}</tr>`).join('')}
+  </tbody></table>`;
+
+  setTimeout(() => {
+    let filtered = DUMMY.filter(p => {
+      // Required groups — ALL must match
+      if (required.length && !required.every(g => matchesGroup(p, g))) return false;
+      // Optional groups — at least one must match (if any exist)
+      if (optional.length && !optional.some(g => matchesGroup(p, g))) return false;
+      // Advanced filters
+      if (seniority && p.tier !== seniority) return false;
+      if (avail === 'Available Now'  && p.avail !== 'yes')  return false;
+      if (avail === 'Available Soon' && p.avail !== 'soon') return false;
+      if (avail === 'Not Available'  && p.avail !== 'no')   return false;
+      if (p.score < minScore) return false;
+      if (p.years < minYears) return false;
+      if (location && !p.location.toLowerCase().includes(location)) return false;
+      return true;
+    });
+
+    results = filtered;
+    doSortData();
+    currentPage = 1;
+    updateStats();
+    renderActiveSummary();
+    renderTable();
+  }, 320);
+}
+
+// ────────────────────────────────────────────
+// SORT
+// ────────────────────────────────────────────
+function doSort() {
+  sortBy = document.getElementById('sortSel').value;
+  doSortData();
+  renderTable();
+}
+function doSortData() {
+  const [k, d] = sortBy.split('_');
+  displayed = [...results].sort((a, b) => {
+    const va = k === 'name' ? a.name : k === 'score' ? a.score : a.years;
+    const vb = k === 'name' ? b.name : k === 'score' ? b.score : b.years;
+    if (typeof va === 'string') return d === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return d === 'asc' ? va - vb : vb - va;
+  });
+}
+
+// ────────────────────────────────────────────
+// STATS
+// ────────────────────────────────────────────
+function updateStats() {
+  const r = results;
+  const reqCount = groups.filter(g => g.required && getKeywords(g).length > 0).length;
+  document.getElementById('sTotal').textContent    = r.length || '0';
+  document.getElementById('sTotalSub').textContent = r.length ? `of ${DUMMY.length} profiles in pool` : 'no matches';
+  document.getElementById('sAvail').textContent    = r.filter(x => x.avail === 'yes').length || '0';
+  document.getElementById('sAvailSub').textContent = 'ready for placement';
+  document.getElementById('sScore').textContent    = r.length ? Math.round(r.reduce((s,x)=>s+x.score,0)/r.length)+'%' : '—';
+  document.getElementById('sScoreSub').textContent = r.length ? 'average relevance' : '';
+  document.getElementById('sGates').textContent    = reqCount || '0';
+  document.getElementById('sGatesSub').textContent = reqCount ? `required filter${reqCount>1?'s':''}` : 'no required gates';
+  document.getElementById('rCount').textContent    = `${r.length} profile${r.length !== 1 ? 's' : ''}`;
+}
+
+// ────────────────────────────────────────────
+// ACTIVE SUMMARY PILLS
+// ────────────────────────────────────────────
+function renderActiveSummary() {
+  const el = document.getElementById('activeSummary');
+  const activeGroups = groups.filter(g => getKeywords(g).length > 0);
+  const seniority = document.getElementById('fSeniority').value;
+  const avail = document.getElementById('fAvailability').value;
+  const loc = document.getElementById('fLocation').value.trim();
+  const yrs = document.getElementById('fYears').value;
+
+  const chips = [];
+  activeGroups.forEach(g => {
+    const kws = getKeywords(g);
+    chips.push(`<div class="sum-chip${g.required ? ' sum-req' : ''}">
+      ${g.required ? '🔒 ' : ''}<strong>${g.name}</strong>: ${kws.slice(0,3).join(', ')}${kws.length>3?` +${kws.length-3}`:''}
+      <span style="color:var(--ink-4);margin-left:3px">[${g.fields.join('+')}  ${g.logic}]</span>
+    </div>`);
+  });
+  if (seniority) chips.push(`<div class="sum-chip"><strong>Tier:</strong> ${seniority}</div>`);
+  if (avail)     chips.push(`<div class="sum-chip"><strong>Avail:</strong> ${avail}</div>`);
+  if (loc)       chips.push(`<div class="sum-chip"><strong>Loc:</strong> ${loc}</div>`);
+  if (yrs && yrs !== '0') chips.push(`<div class="sum-chip"><strong>Exp:</strong> ${yrs}+ yrs</div>`);
+
+  if (chips.length) {
+    el.innerHTML = chips.join('');
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ────────────────────────────────────────────
+// RENDER TABLE
+// ────────────────────────────────────────────
+function renderTable() {
+  const area = document.getElementById('resultsArea');
+  const pagRow = document.getElementById('pagRow');
+
+  if (!displayed.length) {
+    area.innerHTML = `<div class="empty">
+      <div class="empty-icon">∅</div>
+      <div class="empty-h">No profiles matched</div>
+      <div class="empty-sub">Try loosening your filters, switching to OR logic, or removing a required gate</div>
+    </div>`;
+    pagRow.style.display = 'none';
+    return;
+  }
+
+  const start = (currentPage - 1) * PER_PAGE;
+  const pageData = displayed.slice(start, start + PER_PAGE);
+  const tierCls = { 'Exec / C-Suite':'t-exec','Senior Leadership':'t-senior','Middle Manager / Junior':'t-mid','Consulting Bench':'t-consult','SME Bench':'t-sme' };
+  const availInfo = { yes:['ad-yes','Available'], soon:['ad-soon','Soon'], no:['ad-no','Unavailable'] };
+
+  const rows = pageData.map(p => {
+    const [adCls, adLabel] = availInfo[p.avail];
+    const tCls = tierCls[p.tier] || 't-mid';
+    const mChips = p.fields_matched.map(f => {
+      const cls = { title:'mc-title', desc:'mc-desc', company:'mc-company' }[f];
+      return `<span class="match-chip ${cls}">${f}</span>`;
+    }).join('');
+    return `<tr class="fade-row">
+      <td class="td-name">${p.name}</td>
+      <td class="td-title" title="${p.title}">${p.title}</td>
+      <td class="td-company">${p.company}</td>
+      <td>${p.location}</td>
+      <td><span class="tier-badge ${tCls}">${p.tier}</span></td>
+      <td>${p.years} yrs</td>
+      <td>
+        <div class="score-wrap">
+          <div class="score-track"><div class="score-fill" style="width:${p.score}%"></div></div>
+          <span class="score-num">${p.score}%</span>
+        </div>
+      </td>
+      <td><span class="avail-chip"><span class="avail-dot ${adCls}"></span>${adLabel}</span></td>
+      <td><div class="match-chips">${mChips}</div></td>
+      <td class="td-desc" title="${p.desc}">${p.desc}</td>
+    </tr>`;
+  }).join('');
+
+  area.innerHTML = `<div class="table-scroll"><table>
+    <thead><tr>
+      <th onclick="clickSort('name')">Name<span class="sort-arrow">${sortArrow('name')}</span></th>
+      <th onclick="clickSort('title')">Title<span class="sort-arrow">${sortArrow('title')}</span></th>
+      <th>Company</th>
+      <th>Location</th>
+      <th>Tier</th>
+      <th onclick="clickSort('yrs')">Exp<span class="sort-arrow">${sortArrow('yrs')}</span></th>
+      <th onclick="clickSort('score')">Score<span class="sort-arrow">${sortArrow('score')}</span></th>
+      <th>Avail.</th>
+      <th>Matched In</th>
+      <th>Summary</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+
+  // Pagination
+  const totalPgs = Math.ceil(displayed.length / PER_PAGE);
+  if (totalPgs > 1) {
+    pagRow.style.display = 'flex';
+    document.getElementById('pagInfo').textContent =
+      `${start+1}–${Math.min(start+PER_PAGE, displayed.length)} of ${displayed.length}`;
+    document.getElementById('pagBtns').innerHTML =
+      Array.from({ length: totalPgs }, (_,i) =>
+        `<button class="pag-btn${i+1===currentPage?' cur':''}" onclick="goPage(${i+1})">${i+1}</button>`
+      ).join('');
+  } else {
+    pagRow.style.display = 'none';
+  }
+}
+
+function sortArrow(key) {
+  const [k, d] = sortBy.split('_');
+  if (k !== key) return '';
+  return d === 'desc' ? ' ↓' : ' ↑';
+}
+
+function clickSort(key) {
+  const [k, d] = sortBy.split('_');
+  const dir = k === key && d === 'desc' ? 'asc' : 'desc';
+  sortBy = `${key}_${dir}`;
+  document.getElementById('sortSel').value = sortBy;
+  doSortData();
+  renderTable();
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderTable();
+}
+
+// ────────────────────────────────────────────
+// EXPORT
+// ────────────────────────────────────────────
+function doExport() {
+  if (!displayed.length) { alert('Run a search first to export results.'); return; }
+  const h = ['ID','Name','Title','Company','Location','Tier','Years_Exp','Match_Score','Availability','Fields_Matched','Keywords_Hit','Description'];
+  const rows = displayed.map(p => [
+    p.id, `"${p.name}"`, `"${p.title}"`, `"${p.company}"`, `"${p.location}"`,
+    `"${p.tier}"`, p.years, p.score,
+    p.avail === 'yes' ? 'Available Now' : p.avail === 'soon' ? 'Available Soon' : 'Not Available',
+    `"${p.fields_matched.join(', ')}"`,
+    `"${p.kw_hit.join(', ')}"`,
+    `"${p.desc.replace(/"/g,'""')}"`
+  ].join(','));
+  const csv = [h.join(','), ...rows].join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+    download: `WRR_Talent_${new Date().toISOString().slice(0,10)}.csv`
+  });
+  a.click();
+}
+
+// ────────────────────────────────────────────
+// CLEAR
+// ────────────────────────────────────────────
+function clearAll() {
+  groups = []; groupIdSeq = 0;
+  results = []; displayed = [];
+  ['fSeniority','fAvailability','fYears','fScore'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = el.options[0].value;
+  });
+  document.getElementById('fLocation').value = '';
+  document.getElementById('activeSummary').style.display = 'none';
+  document.getElementById('nlResult').classList.remove('visible');
+  document.getElementById('nlInput').value = '';
+  renderGroups();
+  resetResultsView();
+}
+
+// ────────────────────────────────────────────
+// RESET — blank state, no profiles shown
+// ────────────────────────────────────────────
+function resetResultsView() {
+  ['sTotal','sAvail','sScore','sGates'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('sTotalSub').textContent  = '';
+  document.getElementById('sAvailSub').textContent  = '';
+  document.getElementById('sScoreSub').textContent  = '';
+  document.getElementById('sGatesSub').textContent  = '';
+  document.getElementById('rCount').textContent     = '0 profiles';
+  document.getElementById('pagRow').style.display   = 'none';
+  document.getElementById('activeSummary').style.display = 'none';
+  document.getElementById('resultsArea').innerHTML  = `
+    <div class="empty">
+      <div class="empty-icon">⌕</div>
+      <div class="empty-h">No search run yet</div>
+      <div class="empty-sub">Add keywords to a filter group and click Search Profiles — or describe who you're looking for in the bar above</div>
+    </div>`;
+}
+
+// ────────────────────────────────────────────
+// INIT — Group 1 present by default, Title field selected
+// ────────────────────────────────────────────
+addGroup();
+resetResultsView();
+
+</script>
+</body>
+</html>
