@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rosie Hub — Blurb Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f4f0; --sidebar-bg: #111; --card-bg: #fff; --border: #e2e0d8;
+    --text: #111; --muted: #6b6b6b; --red: #E8533A; --yellow: #F5C842;
+    --green: #3DBB6E; --blue: #4A6CF7; --navy: #1e2a4a;
+    --font: 'DM Sans', sans-serif; --serif: 'DM Serif Display', serif;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+
+  /* SIDEBAR */
+  .sidebar { width: 260px; min-height: 100vh; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sb-logo { padding: 20px 24px 16px; border-bottom: 1px solid #2a2a2a; }
+  .sb-we { font-size: 11px; font-style: italic; color: #aaa; display: block; }
+  .sb-name { font-size: 28px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+  .sb-nav { padding: 16px 0; flex: 1; overflow-y: auto; }
+  .sb-section { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 14px 24px 6px; display: flex; justify-content: space-between; }
+  .sb-section.c { color: var(--red); } .sb-section.f { color: var(--yellow); } .sb-section.u, .sb-section.co { color: var(--green); }
+  .sb-section em { color: #555; font-size: 13px; font-weight: 400; font-style: normal; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 8px 24px; font-size: 13px; color: #aaa; cursor: pointer; transition: all .15s; }
+  .sb-item:hover { color: #fff; background: #1e1e1e; }
+  .sb-item.on { color: #fff; }
+  .sb-item .n { font-size: 11px; color: #555; min-width: 20px; }
+
+  /* TOPBAR */
+  .main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 56px; background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .tb-title { font-weight: 700; font-size: 15px; } .tb-title span { color: var(--red); }
+  .tb-right { display: flex; align-items: center; gap: 12px; }
+  .tb-search { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px; background: white; font-size: 12px; color: #666; cursor: pointer; font-family: var(--font); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--red); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+  /* SCREENS */
+  .screen { display: none; padding: 36px 40px 80px; }
+  .screen.on { display: block; }
+
+  /* SHARED */
+  .back { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; background: white; font-size: 13px; font-weight: 500; cursor: pointer; margin-bottom: 28px; transition: all .15s; font-family: var(--font); }
+  .back:hover { background: var(--bg); }
+  .pg-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .rule { border: none; border-top: 1px solid var(--border); margin: 16px 0 24px; }
+  .muted { color: var(--muted); }
+
+  /* SCREEN 1 — JOBS */
+  .search-row { display: flex; gap: 0; margin-bottom: 24px; }
+  .search-input { flex: 1; padding: 12px 18px; border: 1px solid var(--border); border-right: none; border-radius: 8px 0 0 8px; font-size: 14px; font-family: var(--font); background: white; outline: none; }
+  .search-input:focus { border-color: #999; }
+  .search-btn-go { padding: 0 18px; background: var(--navy); color: white; border: none; border-radius: 0 8px 8px 0; cursor: pointer; font-size: 18px; }
+  .results-label { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .results-count { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+  .job-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; cursor: pointer; transition: all .15s; }
+  .job-card:hover { border-color: #bbb; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .jc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .jc-title { font-size: 16px; font-weight: 700; }
+  .jc-company { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .jc-status { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; background: #f0f0ed; color: #555; flex-shrink: 0; }
+  .jc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; font-size: 12px; color: var(--muted); }
+  .jc-chevron { text-align: center; color: #ccc; margin-top: 10px; font-size: 11px; letter-spacing: .1em; }
+
+  /* SCREEN 2 — CANDIDATES */
+  .cands-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .filter-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+  .filter-sel { padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; background: white; font-family: var(--font); font-size: 13px; }
+
+  .cand-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; }
+  .cand-av { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--border); background: #f0ede8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #c5bfb5; }
+  .cand-av svg { width: 30px; height: 30px; }
+  .cand-info { flex: 1; min-width: 0; }
+  .cand-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .cand-contact { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .redact { display: inline-block; width: 110px; height: 11px; background: #e0ddd6; border-radius: 3px; vertical-align: middle; }
+  .cand-assign { font-size: 12px; color: var(--muted); }
+  .cand-assign b { color: var(--text); font-weight: 500; }
+  .gen-btn { padding: 10px 20px; background: var(--navy); color: white; border: none; border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: opacity .15s; }
+  .gen-btn:hover { opacity: .85; }
+
+  /* SCREEN 3 — GENERATOR */
+  .ctx-bar { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+  .ctx-av { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: #f0ede8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #c5bfb5; }
+  .ctx-av svg { width: 24px; height: 24px; }
+  .ctx-name { font-size: 15px; font-weight: 700; }
+  .ctx-sub { font-size: 12px; color: var(--muted); }
+  .ctx-sep { width: 1px; height: 36px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+  .ctx-job-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .ctx-job-val { font-size: 13px; font-weight: 500; }
+
+  .tool-grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+
+  /* CONFIG PANEL */
+  .cfg { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .cfg-head { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .cfg-head h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .badge { font-size: 10px; font-weight: 700; letter-spacing: .08em; background: #EEF1FE; color: var(--blue); padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+  .cfg-body { padding: 20px 24px; }
+
+  .fl { margin-bottom: 18px; }
+  .fl-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
+  .fl-input { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font); font-size: 13px; background: var(--bg); color: var(--text); outline: none; transition: border-color .15s; }
+  .fl-input:focus { border-color: #999; }
+  textarea.fl-input { min-height: 80px; resize: vertical; line-height: 1.5; }
+
+  .fmt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .fmt-card { border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: all .15s; background: var(--bg); }
+  .fmt-card:hover { border-color: #aaa; }
+  .fmt-card.sel { border-color: var(--text); background: var(--text); color: white; }
+  .fmt-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .fmt-desc { font-size: 10px; color: #999; line-height: 1.3; }
+  .fmt-card.sel .fmt-desc { color: #bbb; }
+
+  .sects { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .sects-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
+  .ck { display: flex; align-items: center; gap: 9px; padding: 5px 0; cursor: pointer; user-select: none; }
+  .ck input { display: none; }
+  .ck-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #ccc; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .12s; }
+  .ck input:checked + .ck-box { background: var(--text); border-color: var(--text); }
+  .ck input:checked + .ck-box::after { content: ''; width: 8px; height: 5px; border-left: 1.5px solid white; border-bottom: 1.5px solid white; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .ck-lbl { font-size: 12px; }
+  .ck-def { font-size: 9px; font-weight: 600; color: var(--muted); background: #e8e6e0; padding: 1px 5px; border-radius: 3px; margin-left: auto; text-transform: uppercase; }
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  .go-btn { width: 100%; padding: 12px; background: var(--text); color: white; border: none; border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: .02em; transition: opacity .15s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; }
+  .go-btn:hover { opacity: .85; }
+  .go-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* OUTPUT */
+  .out-panel { display: flex; flex-direction: column; gap: 16px; }
+  .out-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .out-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .out-head-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .out-actions { display: flex; gap: 8px; align-items: center; }
+  .a-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; font-weight: 500; background: white; cursor: pointer; transition: all .12s; font-family: var(--font); }
+  .a-btn:hover { background: var(--bg); }
+  .a-btn.p { background: var(--text); color: white; border-color: var(--text); }
+  .out-body { padding: 20px; }
+
+  .skel { animation: shim 1.4s ease-in-out infinite; }
+  @keyframes shim { 0%,100%{opacity:1} 50%{opacity:.35} }
+  .sl { height: 13px; border-radius: 4px; background: #e0ddd6; margin-bottom: 8px; }
+  .sl.s { width: 40%; } .sl.m { width: 68%; } .sl.f { width: 100%; }
+
+  /* blurb content */
+  .bs { margin-bottom: 16px; }
+  .bs:last-child { margin-bottom: 0; }
+  .bs-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; }
+  .bs-text { font-size: 13px; line-height: 1.65; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--bg); border: 1px solid var(--border); }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .mi { font-size: 12px; color: var(--muted); }
+  .mi b { color: var(--text); font-weight: 600; }
+  .mi a { color: var(--blue); text-decoration: none; }
+  .fit-box { background: #f0f7f3; border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; padding: 12px 14px; }
+  .fit-box .bs-label { color: #2a9a55; }
+  .pp-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--red); margin-bottom: 4px; }
+  .sd-text { font-size: 14px; line-height: 1.7; font-style: italic; border-left: 3px solid var(--text); padding-left: 16px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 3px 8px; border-radius: 20px; }
+  .pill.gen { background: #FEF3C7; color: #92400E; }
+  .pill.done { background: #D1FAE5; color: #065F46; }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.gen .pill-dot { animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-icon { font-size: 30px; margin-bottom: 12px; opacity: .25; }
+  .empty-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .empty-desc { font-size: 12px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-logo"><span class="sb-we">we are</span><div class="sb-name">ROSIE</div></div>
+  <nav class="sb-nav">
+    <div class="sb-section c">Client <em>−</em></div>
+    <div class="sb-item"><span class="n">01</span> Candidate Search</div>
+    <div class="sb-item"><span class="n">02</span> AI Job Description</div>
+    <div class="sb-item on"><span class="n">03</span> Blurb Tool</div>
+    <div class="sb-section f">Finance <em>−</em></div>
+    <div class="sb-item"><span class="n">04</span> Margin Calculator</div>
+    <div class="sb-section u">Utilization <em>−</em></div>
+    <div class="sb-item"><span class="n">05</span> Utilization Dashboard</div>
+    <div class="sb-item"><span class="n">06</span> Harvest Hours Tracking</div>
+    <div class="sb-item"><span class="n">07</span> Supply & Demand Tracking</div>
+    <div class="sb-section co">Community <em>−</em></div>
+    <div class="sb-item"><span class="n">08</span> Rosie Insights</div>
+    <div class="sb-item"><span class="n">09</span> Community Dashboard</div>
+    <div class="sb-item"><span class="n">10</span> Rosie Portal Admin</div>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="tb-title">Rosie <span>Hub</span></div>
+    <div class="tb-right">
+      <button class="tb-search">Search ⌘K</button>
+      <span style="font-size:12px;color:#888">aisha.muhamma...</span>
+      <div class="avatar">AM</div>
+    </div>
+  </div>
+
+  <!-- ══════ SCREEN 1: JOBS ══════ -->
+  <div class="screen on" id="s-jobs">
+    <div style="max-width:860px;">
+      <div class="pg-title">Blurb generation</div>
+      <hr class="rule">
+      <div class="search-row">
+        <input class="search-input" type="text" placeholder="Enter job title to search..." id="jobSearch">
+        <button class="search-btn-go">🔍</button>
+      </div>
+      <div class="results-label">Jobs</div>
+      <div class="results-count" id="jobCount"></div>
+      <div id="jobsList"></div>
+    </div>
+  </div>
+
+  <!-- ══════ SCREEN 2: CANDIDATES ══════ -->
+  <div class="screen" id="s-cands">
+    <div style="max-width:860px;">
+      <button class="back" onclick="goTo('jobs')">← Back to Jobs</button>
+      <div class="pg-title">Blurb generation</div>
+      <hr class="rule">
+      <div style="font-size:12px;color:var(--muted);">Candidates of</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:20px;" id="s2-job-title"></div>
+      <div class="cands-bar">
+        <div style="font-size:13px;color:var(--muted);" id="s2-count"></div>
+        <div class="filter-row">Filter by Status <select class="filter-sel"><option>All</option><option>LEAD</option><option>Submitted</option><option>Interview</option></select></div>
+      </div>
+      <div id="candsList"></div>
+    </div>
+  </div>
+
+  <!-- ══════ SCREEN 3: GENERATOR ══════ -->
+  <div class="screen" id="s-gen">
+    <button class="back" onclick="goTo('cands')">← Back to Candidates</button>
+
+    <div class="ctx-bar">
+      <div class="ctx-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div>
+        <div class="ctx-name" id="ctx-name"></div>
+        <div class="ctx-sub" id="ctx-sub"></div>
+      </div>
+      <div class="ctx-sep"></div>
+      <div>
+        <div class="ctx-job-label">Role</div>
+        <div class="ctx-job-val" id="ctx-job"></div>
+      </div>
+    </div>
+
+    <div class="tool-grid">
+      <!-- CONFIG -->
+      <div class="cfg">
+        <div class="cfg-head"><h2>Configure</h2><span class="badge">Client</span></div>
+        <div class="cfg-body">
+          <div class="fl">
+            <div class="fl-label">Additional Notes (Optional)</div>
+            <textarea class="fl-input" id="extraNotes" placeholder="Key selling points, role-specific context..."></textarea>
+          </div>
+
+          <div class="fl" style="margin-bottom:0;">
+            <div class="fl-label" style="margin-bottom:10px;">Output Format</div>
+            <div class="fmt-grid">
+              <div class="fmt-card sel" data-fmt="comp" onclick="setFmt(this)"><div class="fmt-name">Comprehensive</div><div class="fmt-desc">Background, experience, expertise + metadata</div></div>
+              <div class="fmt-card" data-fmt="narr" onclick="setFmt(this)"><div class="fmt-name">Narrative</div><div class="fmt-desc">Flowing paragraphs, optional add-ons</div></div>
+              <div class="fmt-card" data-fmt="four" onclick="setFmt(this)"><div class="fmt-name">4Ps</div><div class="fmt-desc">Pedigree · Passion · Potential · Play</div></div>
+              <div class="fmt-card" data-fmt="simp" onclick="setFmt(this)"><div class="fmt-name">Simple & Direct</div><div class="fmt-desc">One punchy executive summary</div></div>
+            </div>
+
+            <div id="sects-comp" class="sects">
+              <div class="sects-title">Included Sections</div>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Background</span><span class="ck-def">Fixed</span></label>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Experience</span><span class="ck-def">Fixed</span></label>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Expertise</span><span class="ck-def">Fixed</span></label>
+              <div class="divider"></div>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Location</span><span class="ck-def">Fixed</span></label>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Hourly Rate</span><span class="ck-def">Fixed</span></label>
+            </div>
+
+            <div id="sects-narr" class="sects hidden">
+              <div class="sects-title">Sections to Include</div>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Background</span><span class="ck-def">Default</span></label>
+              <label class="ck"><input type="checkbox" id="n-fit"><span class="ck-box"></span><span class="ck-lbl">Why They're a Strong Fit</span></label>
+              <div class="divider"></div>
+              <label class="ck"><input type="checkbox" id="n-rate"><span class="ck-box"></span><span class="ck-lbl">Rate</span></label>
+              <label class="ck"><input type="checkbox" id="n-li"><span class="ck-box"></span><span class="ck-lbl">LinkedIn</span></label>
+              <label class="ck"><input type="checkbox" id="n-port"><span class="ck-box"></span><span class="ck-lbl">Portfolio</span></label>
+            </div>
+
+            <div id="sects-four" class="sects hidden">
+              <div class="sects-title">Sections to Include</div>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Pedigree</span><span class="ck-def">Default</span></label>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Passion</span><span class="ck-def">Default</span></label>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Potential</span><span class="ck-def">Default</span></label>
+              <label class="ck"><input type="checkbox" checked disabled><span class="ck-box"></span><span class="ck-lbl">Play</span><span class="ck-def">Default</span></label>
+              <div class="divider"></div>
+              <label class="ck"><input type="checkbox" id="fp-exp"><span class="ck-box"></span><span class="ck-lbl">Expertise (optional add-on)</span></label>
+            </div>
+
+            <div id="sects-simp" class="sects hidden">
+              <div class="sects-title">About This Format</div>
+              <p style="font-size:11px;color:#888;line-height:1.6;">A 3–4 sentence executive summary paragraph. No section headers, no metadata. Best for tracker notes and top-of-funnel introductions.</p>
+            </div>
+          </div>
+
+          <button class="go-btn" onclick="doGenerate()" id="genBtn"><span>✦</span> Generate Blurb</button>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="out-panel" id="outPanel">
+        <div class="out-card" id="emptyCard">
+          <div class="out-body">
+            <div class="empty">
+              <div class="empty-icon">✦</div>
+              <div class="empty-title">No blurb generated yet</div>
+              <div class="empty-desc">Configure your format and click Generate to get started.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── DATA ──
+const JOBS = [
+  { id:1, title:'TV Producer – SF/Bay Area', company:'Rakuten Kobo Inc.', ind:'Retail', loc:'California, San Francisco, United States', type:'Contract', created:'2-Apr-2026 6:53 pm', hire:'6-May-2026 7:00 pm', status:'Sourcing' },
+  { id:2, title:'JCK Event Videographer', company:'UPS Capital', ind:'Consumer Services', loc:'Georgia, Palmetto, United States', type:'Contract', created:'2-Apr-2026 3:06 pm', hire:'2-May-2026 7:00 pm', status:'Created' },
+  { id:3, title:'Field Marketing Lead', company:'Argonne Restaurant Group', ind:'QSR / Hospitality', loc:'Atlanta, Georgia, United States', type:'Contract', created:'28-Mar-2026 10:00 am', hire:'15-May-2026 5:00 pm', status:'Sourcing' },
+  { id:4, title:'Senior Programmatic Manager', company:'TrackerMedia', ind:'AdTech', loc:'New York, NY, United States', type:'Contract', created:'1-Apr-2026 9:00 am', hire:'12-May-2026 12:00 pm', status:'Submitted' },
+  { id:5, title:'VP, Franchise Marketing', company:'The Cleaning Authority', ind:'Home Services / Franchise', loc:'Remote, United States', type:'Contract', created:'25-Mar-2026 2:00 pm', hire:'20-May-2026 5:00 pm', status:'Interview' },
+  { id:6, title:'Senior Creative Director – Brand', company:'Chick-fil-A Corporate', ind:'QSR', loc:'Atlanta, Georgia, United States', type:'Contract', created:'30-Mar-2026 11:00 am', hire:'9-May-2026 5:00 pm', status:'Created' },
+  { id:7, title:'Ad Operations Manager', company:'NHL.com Digital', ind:'Sports Media', loc:'Remote, United States', type:'Contract', created:'3-Apr-2026 8:30 am', hire:'16-May-2026 5:00 pm', status:'Sourcing' },
+];
+
+const CANDS = {
+  1:[
+    { id:'c1', name:'Rachel Levin', rate:'$120/hr', loc:'Los Angeles, CA', li:'linkedin.com/in/rachellevin', assign:'TV Producer – SF/Bay Area – LEAD',
+      notes:'Rachel is a seasoned TV producer with 12 years across network and streaming, most recently at NBCUniversal where she shepherded three primetime series from development through post. She has deep experience managing production budgets north of $5M, coordinating cross-functional crews of 50+, and delivering on tight broadcast deadlines. Her background spans live event production, documentary, and scripted formats.',
+      exp:'Senior Producer, NBCUniversal · Freelance Producer, Netflix, Amazon · Production Manager, Warner Bros.',
+      chips:['Television Production','Post Production','Budget Management ($5M+)','Crew Coordination','Scripted & Documentary','Broadcast Delivery'] },
+    { id:'c2', name:'Megann Sept', rate:'$110/hr', loc:'San Francisco, CA', li:'linkedin.com/in/megannsept', assign:'TV Producer – SF/Bay Area – LEAD',
+      notes:'Megann is a Bay Area-based producer with 9 years of experience in digital and broadcast content, with a specialty in branded entertainment and social-first video. She spent four years at Meta producing creator content at scale before moving into freelance production for technology clients including Salesforce and Adobe.',
+      exp:'Producer, Meta · Freelance Producer, Salesforce, Adobe · Content Lead, LinkedIn',
+      chips:['Digital Content Production','Branded Entertainment','Social Video','Creator Economy','Tech Client Experience'] },
+    { id:'c3', name:'Jordan Kim', rate:'$125/hr', loc:'Oakland, CA', li:'linkedin.com/in/jordankim', assign:'TV Producer – SF/Bay Area – LEAD',
+      notes:'Jordan brings 15 years of production experience spanning documentary, reality, and branded content. Most recently Executive Producer at Hulu for two original documentary series. Strong Bay Area network and prior work with PBS, Vice Media, and Vox Media.',
+      exp:'Executive Producer, Hulu · Producer, Vice Media, PBS · Field Producer, Vox',
+      chips:['Documentary','Reality TV','Branded Content','Executive Production','Public Media'] },
+  ],
+  2:[
+    { id:'c4', name:'Marcus Webb', rate:'$85/hr', loc:'Atlanta, GA', li:'linkedin.com/in/marcuswebb', assign:'JCK Event Videographer – LEAD',
+      notes:'Marcus is a freelance videographer and editor with 8 years of event and commercial production. He has covered high-profile events including Mercedes-Benz Fashion Week Atlanta and multiple UPS Capital corporate summits.',
+      exp:'Freelance Videographer · Event Lead, UPS Capital Summits · Production, MB Fashion Week ATL',
+      chips:['Event Videography','Corporate Video','Post-Production','On-location Shooting','Drone Certified'] },
+    { id:'c5', name:'Tina Russo', rate:'$80/hr', loc:'Palmetto, GA', li:'linkedin.com/in/tinarusso', assign:'JCK Event Videographer – LEAD',
+      notes:'Tina specializes in live event videography with a focus on corporate and luxury brand activations. Her client roster includes Coca-Cola, Delta Air Lines, and Porsche Cars North America.',
+      exp:'Videographer, Coca-Cola · Event Production, Delta Air Lines · Brand Videographer, Porsche NA',
+      chips:['Live Event Production','Luxury Brand Activations','Corporate Video','Color Grading','Multi-camera'] },
+  ],
+  3:[
+    { id:'c6', name:'Dan Reyes', rate:'$145/hr', loc:'Atlanta, GA', li:'linkedin.com/in/dreyes1', port:'dan-reyes.com', assign:'Field Marketing Lead – LEAD',
+      notes:'Dan is a field and experiential marketing professional with 24 years of experience, most recently as Field Marketing Advisor for Buffalo Wild Wings GO, where he built their entire field marketing program from scratch. He created franchise marketing playbooks, managed 30+ successful restaurant openings (pre-opening through 90-day plans), developed college campus activation strategies, rebranded all POS/collateral for corporate locations nationwide, and executed 50+ street team activations. He also runs Conexión Agency, managing experiential campaigns for Coca-Cola, Mercedes-Benz, Atlanta United, Verizon, and Sonic. Bilingual (English/Spanish).',
+      exp:'Field Marketing Advisor, Buffalo Wild Wings GO · Founder & CD, Conexión Agency · Experiential Lead, Coca-Cola, Verizon',
+      chips:['Field Marketing','Experiential Campaigns','Franchise Playbooks','Restaurant Openings (30+)','Street Team Activations','Bilingual EN/ES'] },
+    { id:'c7', name:'Simone Hartley', rate:'$130/hr', loc:'Atlanta, GA', li:'linkedin.com/in/simonehartley', assign:'Field Marketing Lead – LEAD',
+      notes:'Simone is a field marketing operator with 14 years in QSR and franchise marketing. She led regional marketing for 80+ Chick-fil-A franchise units and built the local store marketing program for a 35-unit Tropical Smoothie Cafe operator group.',
+      exp:'Regional Marketing Lead, Chick-fil-A Franchise · Field Marketing Director, Tropical Smoothie Cafe · Brand Manager, Arby\'s',
+      chips:['Franchise Marketing','Local Store Marketing','QSR Strategy','Multi-unit Ops','Regional Campaign Management'] },
+  ],
+  4:[
+    { id:'c8', name:'Stephen Okafor', rate:'$175/hr', loc:'New York, NY', li:'linkedin.com/in/stephenokafor', assign:'Senior Programmatic Manager – LEAD',
+      notes:'Stephen is a 15-year programmatic veteran who has operated at every layer of the ecosystem — from hands-on trading to global strategy, agency leadership, and adtech consulting. He grew Samsung\'s programmatic spend from $50MM to $90MM at Starcom, led global programmatic for IBM at EightBar/GroupM, and currently oversees $40MM in annual investment at Wavemaker managing Danone across DSPs, DCO, and retail media.',
+      exp:'Senior Manager, Programmatic, Wavemaker · Global Programmatic Lead, EightBar/GroupM · Programmatic Manager, Starcom',
+      chips:['Programmatic Trading','DSP Management','Global Media Strategy','Team Leadership','AI & Automation','Nine-figure Spend'] },
+  ],
+  5:[
+    { id:'c9', name:'Frances Luong', rate:'$160/hr', loc:'Remote', li:'linkedin.com/in/francesluong', assign:'VP, Franchise Marketing – LEAD',
+      notes:'Frances is a franchise marketing operator with 11+ years building demand generation systems for multi-location brands, including CMO roles at Resibrands (150 home services franchise units) and 3Natives (50 franchise locations). Her entry approach is to map current channels and spend, diagnose where the funnel is broken, and connect revenue to ad spend through the CRM before touching anything else. She leads with data, earns franchisee trust through results, and understands the PE accountability dynamic.',
+      exp:'CMO, Resibrands · CMO, 3Natives · VP Marketing, HomeTeam Pest Defense',
+      chips:['Franchise Marketing','Demand Generation','CRM Strategy','PE Accountability','Multi-location Brands','Franchisee Relations'] },
+  ],
+  6:[
+    { id:'c10', name:'Irina Ivanova', rate:'$165/hr', loc:'Atlanta, GA', li:'linkedin.com/in/irinaivanovalink', port:'irinaivanova.com', assign:'Senior Creative Director – LEAD',
+      notes:'Irina brings 15+ years shaping brand identities for major players, most notably at PepsiCo\'s Design & Innovation Center for six years. She was instrumental in developing 360-degree design experiences for global brands like Cheetos and Doritos, managing the entire creative process from concept to delivery and ensuring consistency across diverse touchpoints. She creates strategic design briefs, manages complex projects and budgets, and has presented to audiences of hundreds at quarterly Brand Immersion sessions.',
+      exp:'Creative Director, PepsiCo Design & Innovation Center · Brand Design Lead, Frito-Lay · Senior Designer, BBDO Atlanta',
+      chips:['Brand Identity Systems','Creative Direction','Visual Strategy','Design Management','360° Brand Experiences','Design Systems'] },
+  ],
+  7:[
+    { id:'c11', name:'Edward Park', rate:'$155/hr', loc:'Remote', li:'linkedin.com/in/edwardparkops', assign:'Ad Operations Manager – LEAD',
+      notes:'Edward is an ad operations and ad tech leader with 9+ years of experience spanning publisher and agency sides, most recently as Senior Manager of Ad Tech/Ops at NHL.com. His career includes MLB Advanced Media, TuneIn, Golf.com, and Spark Foundry. At MLB he built an internal error tracking system that cut trafficking errors by 90% and saved $1M+ in churn. He managed and developed a team of five with two earning promotions.',
+      exp:'Senior Manager, Ad Tech/Ops, NHL.com · Ad Ops Lead, MLB Advanced Media · Trafficking Manager, Spark Foundry',
+      chips:['Ad Operations','GAM/DFP','DCM','DoubleVerify / IAS','QA Systems','Publisher & Agency','Team Leadership'] },
+  ],
+};
+
+let selJob = null, selCand = null, curFmt = 'comp';
+
+function goTo(s) {
+  document.querySelectorAll('.screen').forEach(x => x.classList.remove('on'));
+  document.getElementById('s-' + s).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// JOBS
+function renderJobs(q='') {
+  const jobs = q ? JOBS.filter(j => (j.title+j.company).toLowerCase().includes(q.toLowerCase())) : JOBS;
+  document.getElementById('jobCount').innerHTML = `<strong>${JOBS.length.toLocaleString()}</strong> results`;
+  document.getElementById('jobsList').innerHTML = jobs.map(j => `
+    <div class="job-card" onclick="pickJob(${j.id})">
+      <div class="jc-top">
+        <div><div class="jc-title">${j.title}</div><div class="jc-company">${j.company} · ${j.ind}</div></div>
+        <div class="jc-status">${j.status}</div>
+      </div>
+      <div class="jc-meta">
+        <div>📍 ${j.loc}</div><div>💼 ${j.type}</div>
+        <div>Created on: ${j.created}</div><div>Target hire date: ${j.hire}</div>
+      </div>
+      <div class="jc-chevron">∨</div>
+    </div>`).join('');
+}
+document.getElementById('jobSearch').addEventListener('input', e => renderJobs(e.target.value));
+
+function pickJob(id) {
+  selJob = JOBS.find(j => j.id===id);
+  document.getElementById('s2-job-title').textContent = selJob.title;
+  const cands = CANDS[id]||[];
+  document.getElementById('s2-count').textContent = `${cands.length} results`;
+  document.getElementById('candsList').innerHTML = cands.map(c => `
+    <div class="cand-card">
+      <div class="cand-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div class="cand-info">
+        <div class="cand-name">${c.name}</div>
+        <div class="cand-contact">
+          <span>✉ <span class="redact"></span></span>
+          <span>📞 <span class="redact" style="width:85px"></span></span>
+        </div>
+        <div class="cand-assign"><b>Primary Assignment:</b> ${c.assign}</div>
+      </div>
+      <button class="gen-btn" onclick="pickCand('${c.id}')">Generate Blurb</button>
+    </div>`).join('');
+  goTo('cands');
+}
+
+function pickCand(id) {
+  selCand = Object.values(CANDS).flat().find(c => c.id===id);
+  document.getElementById('ctx-name').textContent = selCand.name;
+  document.getElementById('ctx-sub').textContent = selCand.rate + ' · ' + selCand.loc;
+  document.getElementById('ctx-job').textContent = selJob.title;
+  // reset
+  document.getElementById('emptyCard').classList.remove('hidden');
+  document.querySelectorAll('.out-card:not(#emptyCard)').forEach(x => x.remove());
+  curFmt = 'comp';
+  document.querySelectorAll('.fmt-card').forEach(x => x.classList.remove('sel'));
+  document.querySelector('[data-fmt="comp"]').classList.add('sel');
+  document.querySelectorAll('[id^="sects-"]').forEach(x => x.classList.add('hidden'));
+  document.getElementById('sects-comp').classList.remove('hidden');
+  document.getElementById('extraNotes').value = '';
+  goTo('gen');
+}
+
+function setFmt(el) {
+  document.querySelectorAll('.fmt-card').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+  curFmt = el.dataset.fmt;
+  document.querySelectorAll('[id^="sects-"]').forEach(x => x.classList.add('hidden'));
+  document.getElementById('sects-' + curFmt).classList.remove('hidden');
+}
+
+function doGenerate() {
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;animation:blink 1s infinite">●</span> Generating...';
+  document.getElementById('emptyCard').classList.add('hidden');
+  document.querySelectorAll('.out-card:not(#emptyCard)').forEach(x => x.remove());
+
+  const skel = mkSkel();
+  document.getElementById('outPanel').appendChild(skel);
+  setTimeout(() => {
+    skel.remove();
+    document.getElementById('outPanel').appendChild(mkResult());
+    btn.disabled = false; btn.innerHTML = '<span>✦</span> Generate Blurb';
+  }, 1800);
+}
+
+function mkSkel() {
+  const d = document.createElement('div'); d.className = 'out-card';
+  d.innerHTML = `<div class="out-head"><div class="out-head-title">Generating...</div><span class="pill gen"><span class="pill-dot"></span> Generating</span></div>
+    <div class="out-body skel"><div class="sl s" style="margin-bottom:14px"></div><div class="sl f"></div><div class="sl f"></div><div class="sl m"></div><div class="sl f" style="margin-top:14px"></div><div class="sl f"></div><div class="sl s"></div></div>`;
+  return d;
+}
+
+function mkResult() {
+  const labels = {comp:'Comprehensive', narr:'Narrative', four:'4Ps Format', simp:'Simple & Direct'};
+  const c = selCand;
+  const d = document.createElement('div'); d.className = 'out-card';
+  d.innerHTML = `
+    <div class="out-head">
+      <div class="out-head-title">${c.name} · ${labels[curFmt]}</div>
+      <div class="out-actions">
+        <span class="pill done"><span class="pill-dot"></span> Ready</span>
+        <button class="a-btn" onclick="doCopy(this)">Copy</button>
+        <button class="a-btn p">Use</button>
+      </div>
+    </div>
+    <div class="out-body">${blurbHTML(c)}</div>`;
+  return d;
+}
+
+function blurbHTML(c) {
+  if (curFmt==='comp') return compHTML(c);
+  if (curFmt==='narr') return narrHTML(c);
+  if (curFmt==='four') return fourHTML(c);
+  return simpHTML(c);
+}
+
+function compHTML(c) {
+  return `
+    <div class="bs"><div class="bs-label">Background</div><p class="bs-text">${c.notes}</p></div>
+    <div class="bs"><div class="bs-label">Experience</div><p class="bs-text">${c.exp}</p></div>
+    <div class="bs"><div class="bs-label">Expertise</div><div class="chips">${c.chips.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>
+    <div class="divider"></div>
+    <div class="meta-row">
+      <div class="mi"><b>Location:</b> ${c.loc}</div>
+      <div class="mi"><b>Rate:</b> ${c.rate}</div>
+      ${c.li?`<div class="mi"><b>LinkedIn:</b> <a href="#">${c.li}</a></div>`:''}
+      ${c.port?`<div class="mi"><b>Portfolio:</b> <a href="#">${c.port}</a></div>`:''}
+    </div>`;
+}
+
+function narrHTML(c) {
+  const showFit = document.getElementById('n-fit')?.checked;
+  const showRate = document.getElementById('n-rate')?.checked;
+  const showLi = document.getElementById('n-li')?.checked;
+  const showPort = document.getElementById('n-port')?.checked;
+  let h = `<div class="bs"><div class="bs-label">Background</div><p class="bs-text">${c.notes}</p></div>`;
+  if (showFit) h += `<div class="bs"><div class="fit-box"><div class="bs-label">Why They're a Strong Fit</div><p class="bs-text">${c.name}'s background maps directly to this opportunity. Their experience building programs from scratch, managing complex stakeholder relationships, and delivering measurable results in comparable environments makes them an ideal fit for ${selJob?.title||'this role'}. They're available immediately and bring both the strategic vision and hands-on execution this engagement requires.</p></div></div>`;
+  if (showRate||showLi||showPort) {
+    h += `<div class="divider"></div><div class="meta-row">`;
+    if (showRate) h += `<div class="mi"><b>Rate:</b> ${c.rate}</div>`;
+    if (showLi && c.li) h += `<div class="mi"><b>LinkedIn:</b> <a href="#">${c.li}</a></div>`;
+    if (showPort && c.port) h += `<div class="mi"><b>Portfolio:</b> <a href="#">${c.port}</a></div>`;
+    h += `</div>`;
+  }
+  return h;
+}
+
+function fourHTML(c) {
+  const showExp = document.getElementById('fp-exp')?.checked;
+  let h = `
+    <div class="bs"><div class="pp-label">Pedigree</div><p class="bs-text">${c.notes}</p></div>
+    <div class="bs"><div class="pp-label">Passion</div><p class="bs-text">${c.name} is a builder at heart. Their career reflects a consistent pattern of stepping into ambiguous environments and creating structure, systems, and results where none previously existed. They are energized by complex, high-stakes work — and have a track record to prove it.</p></div>
+    <div class="bs"><div class="pp-label">Potential</div><p class="bs-text">${c.name}'s standout strength is infrastructure creation and stakeholder alignment. They know how to manage up, execute independently, and build the organizational trust needed to drive lasting change. Their background positions them to add immediate value while building for the long term.</p></div>
+    <div class="bs"><div class="pp-label">Play</div><p class="bs-text">${c.name} is ${c.loc.toLowerCase().includes('remote')?'fully remote-capable':c.loc+'-based'} and available immediately. Their background in cross-functional environments maps directly to the expectations of the ${selJob?.title||'role'}, and their experience owning results without heavy oversight makes them a strong fit for this engagement model.</p></div>`;
+  if (showExp) h += `<div class="bs"><div class="bs-label">Expertise</div><div class="chips">${c.chips.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>`;
+  return h;
+}
+
+function simpHTML(c) {
+  const snippet = c.notes.split('. ').slice(0,3).join('. ')+'.';
+  return `<div class="bs"><p class="sd-text">${snippet} For a role demanding both strategic vision and the operational credibility to execute at scale, ${c.name} brings both in equal measure.</p></div>`;
+}
+
+function doCopy(btn) {
+  const txt = btn.closest('.out-card').querySelector('.out-body').innerText;
+  navigator.clipboard.writeText(txt).then(()=>{ btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',1500); });
+}
+
+renderJobs();
+</script>
+</body>
+</html>
